@@ -1,26 +1,128 @@
-[![CodeQL](https://github.com/morganism/ruby_template/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/morganism/ruby_template/actions/workflows/codeql-analysis.yml)
-[![ruby_template](https://github.com/morganism/ruby_template/actions/workflows/default.yml/badge.svg)](https://github.com/morganism/ruby_template/actions/workflows/default.yml)
-[![Ruby](https://github.com/morganism/ruby_template/actions/workflows/ruby.yml/badge.svg)](https://github.com/morganism/ruby_template/actions/workflows/ruby.yml)
+# totp
 
-# ruby_template
+> A pure-Ruby RFC 6238 TOTP (Time-based One-Time Password) implementation compatible with Google Authenticator, usable both as a library module and a standalone CLI tool.
 
-A ruby repository template 
+**Version:** 2.0.0  
+**Generated:** 2026-03-09
 
-Use this to create any new ruby repo
+---
 
-#bundle install
- #. /opt/hostedtoolcache/Ruby/2.6.10/x64/bin/bundle config --local path /home/runner/work/ruby_template/ruby_template/vendor/bundle
-  #/opt/hostedtoolcache/Ruby/2.6.10/x64/bin/bundle config --local deployment true
-  #Cache key: setup-ruby-bundler-cache-v4-ubuntu-20.04-ruby-2.6.10-Gemfile.lock-9242afa1541aa6dd726e5da1ab017fa7a5d7825023721e15a4f2e4f2300d4ebe
-  #/opt/hostedtoolcache/Ruby/2.6.10/x64/bin/bundle install --jobs 4
-  #Your bundle only supports platforms ["x86_64-darwin-20"] but your local platform
-  #is x86_64-linux. Add the current platform to the lockfile with
-  #`bundle lock --add-platform x86_64-linux` and try again.
-  #Took   0.79 seconds
-#Error: Error: The process '/opt/hostedtoolcache/Ruby/2.6.10/x64/bin/bundle' failed with exit code 16
-    #at ExecState._setResult (/home/runner/work/_actions/ruby/setup-ruby/0a29871fe2b0200a17a4497bae54fe5df0d973aa/dist/index.js:6023:25)
-    #at ExecState.CheckComplete (/home/runner/work/_actions/ruby/setup-ruby/0a29871fe2b0200a17a4497bae54fe5df0d973aa/dist/index.js:6006:18)
-    #at ChildProcess.<anonymous> (/home/runner/work/_actions/ruby/setup-ruby/0a29871fe2b0200a17a4497bae54fe5df0d973aa/dist/index.js:5900:27)
-    #at ChildProcess.emit (node:events:390:28)
-    ##at maybeClose (node:internal/child_process:1064:16)
-    #at Process.ChildProcess._handle.onexit (node:internal/child_process:301:5)
+## Purpose
+
+Provides TOTP generation, validation, and account setup without requiring any external gems for core functionality. It solves the problem of integrating two-factor authentication into Ruby applications or performing quick TOTP operations from the command line, eliminating the need for heavyweight dependencies.
+
+## Synopsis
+
+```
+totp.rb [--setup ACCOUNT | --current | --validate CODE] [--secret SECRET] [--issuer ISSUER] [-h]
+```
+
+## Description
+
+The script implements Base32 encoding/decoding (RFC 4648) from scratch, avoiding gem dependencies for the core cryptographic path. HOTP (RFC 4226) is computed using OpenSSL's HMAC-SHA1 with dynamic truncation per the RFC specification, and TOTP wraps HOTP by dividing the current Unix timestamp by the configurable time interval (default 30 seconds). Validation supports a configurable clock-drift window (default ±1 interval) to tolerate minor time discrepancies between client and server. The module is dual-purpose: it can be `require`d as a library exposing `TOTP.generate_secret`, `TOTP.validate`, etc., or executed directly to enter a CLI mode built with `OptionParser`. QR code rendering is optional and gracefully degrades if the `rqrcode` gem is not installed.
+
+## Notable Qualities
+
+The Base32 codec is implemented with pure bit-manipulation, accumulating bits in a buffer and extracting 5-bit (encode) or 8-bit (decode) chunks without any lookup tables beyond the alphabet string. The `qr_ansi` method uses a rescue-from-LoadError pattern to make the `rqrcode` gem entirely optional at runtime, falling back to printing the otpauth URI. The secret can be provided via CLI flag, environment variable, or interactive prompt (with `io/console` also soft-required), creating a layered credential-input strategy.
+
+## Options
+
+| Flag | Description |
+|------|-------------|
+| `--setup ACCOUNT` | Generate a new TOTP secret and display setup instructions for the given account name |
+| `--current` | Print the current TOTP code for the provided secret |
+| `--validate CODE` | Validate a 6-digit TOTP code against the provided secret |
+| `--secret SECRET` | Base32-encoded secret key (can also be set via TOTP_SECRET environment variable) |
+| `--issuer ISSUER` | Issuer label displayed in the authenticator app |
+| `-h, --help` | Show usage help and exit |
+
+## Usage Examples
+
+```sh
+totp --setup alice@example.com --issuer 'MyApp'
+```
+
+```sh
+totp --setup bob@corp.io --issuer 'CorpVPN' --secret JBSWY3DPEHPK3PXP
+```
+
+```sh
+totp --current --secret JBSWY3DPEHPK3PXP
+```
+
+```sh
+TOTP_SECRET=JBSWY3DPEHPK3PXP totp --current
+```
+
+```sh
+totp --validate 482916 --secret JBSWY3DPEHPK3PXP
+```
+
+```sh
+TOTP_SECRET=JBSWY3DPEHPK3PXP totp --validate 123456
+```
+
+```sh
+totp --help
+```
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `TOTP_SECRET` | Base32-encoded TOTP secret key; used as fallback when --secret is not provided on the command line |
+
+## Files
+
+| Path | Description |
+|------|-------------|
+| `totp.rb` | Main script providing both the TOTP module and the CLI entry point |
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success (help shown, code printed, or validation passed) |
+| `1` | Failure (invalid option, or TOTP code validation failed) |
+
+## Dependencies
+
+**Minimum Ruby version:** `3.0`
+
+### Gems
+
+| Gem | Version | Status |
+|-----|---------|--------|
+| `rqrcode` | `>= 1.0` | Optional |
+
+### System Binaries
+
+| Binary | Package | Status |
+|--------|---------|--------|
+| `ruby` | `ruby` | Required |
+
+
+## Installation
+
+```sh
+# Check dependencies first
+ruby totp_install.rb --check
+
+# Install (may need --sudo if prefix is system-owned)
+ruby totp_install.rb --install
+
+# Custom prefix
+ruby totp_install.rb --install --prefix ~/.local
+```
+
+## Bugs / Limitations
+
+The interactive secret prompt via prompt_secret does not suppress echo (io/console is soft-loaded but $stdin.gets is used instead of $stdin.noecho), so the secret may be visible on screen. Only HMAC-SHA1 is supported; SHA-256 and SHA-512 algorithms defined in RFC 6238 are not implemented. The Base32 decoder silently strips characters outside A-Z2-7 rather than raising an error, which could mask input mistakes.
+
+## See Also
+
+`oathtool(1)`, `openssl(1)`, `qrencode(1)`, `google-authenticator(1)`, `ruby(1)`
+
+---
+
+*Generated by [doc_generator.rb](doc_generator.rb)*

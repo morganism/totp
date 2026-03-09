@@ -1,0 +1,61 @@
+{
+  "binary": {
+    "source": "totp.rb",
+    "target": "totp",
+    "destination": "/usr/local/bin",
+    "chmod": "0755"
+  },
+  "man_pages": [
+    {
+      "source": "totp.1",
+      "section": "1",
+      "destination": "/usr/local/share/man/man1"
+    }
+  ],
+  "dependencies": {
+    "ruby_version": "3.0",
+    "gems": [
+      {
+        "name": "rqrcode",
+        "version": ">= 1.0",
+        "optional": true
+      }
+    ],
+    "system_bins": [
+      {
+        "bin": "ruby",
+        "package": "ruby",
+        "optional": false
+      }
+    ]
+  },
+  "environment": [
+    {
+      "var": "TOTP_SECRET",
+      "required": false,
+      "description": "Base32-encoded TOTP secret key used when --secret flag is not provided",
+      "suggest_export": "export TOTP_SECRET=JBSWY3DPEHPK3PXP"
+    }
+  ],
+  "config_dirs": [
+
+  ],
+  "config_files": [
+
+  ],
+  "post_install_notes": [
+    "Ensure Ruby 3.0+ is available in your PATH.",
+    "For QR code display in the terminal, install the optional rqrcode gem: gem install rqrcode",
+    "Store your TOTP secrets securely; consider using a password manager or encrypted environment file.",
+    "The TOTP_SECRET environment variable can be set in your shell profile for convenience, but be aware of shell history and process table exposure."
+  ],
+  "uninstall_notes": [
+    "Remove the installed binary: sudo rm /usr/local/bin/totp",
+    "Remove the man page if installed: sudo rm /usr/local/share/man/man1/totp.1",
+    "Optionally uninstall the rqrcode gem: gem uninstall rqrcode",
+    "Remove TOTP_SECRET from your shell profile if it was set."
+  ],
+  "name": "totp",
+  "version": "2.0.0",
+  "author": "morgan"
+}

@@ -1,0 +1,84 @@
+totp v2.0.0
+
+------------------------------------------------------------------------------
+DESCRIPTION
+------------------------------------------------------------------------------
+
+  Provides TOTP generation, validation, and account setup without requiring any
+  external gems for core functionality. It solves the problem of integrating
+  two-factor authentication into Ruby applications or performing quick TOTP
+  operations from the command line, eliminating the need for heavyweight
+  dependencies.
+
+------------------------------------------------------------------------------
+SYNOPSIS
+------------------------------------------------------------------------------
+
+  totp.rb [--setup ACCOUNT | --current | --validate CODE] [--secret SECRET] [--issuer ISSUER] [-h]
+
+------------------------------------------------------------------------------
+OPTIONS
+------------------------------------------------------------------------------
+
+  --setup ACCOUNT           Generate a new TOTP secret and display setup instructions for the given account name
+  --current                 Print the current TOTP code for the provided secret
+  --validate CODE           Validate a 6-digit TOTP code against the provided secret
+  --secret SECRET           Base32-encoded secret key (can also be set via TOTP_SECRET environment variable)
+  --issuer ISSUER           Issuer label displayed in the authenticator app
+  -h, --help                Show usage help and exit
+
+------------------------------------------------------------------------------
+EXAMPLES
+------------------------------------------------------------------------------
+
+  totp --setup alice@example.com --issuer 'MyApp'
+
+  totp --setup bob@corp.io --issuer 'CorpVPN' --secret JBSWY3DPEHPK3PXP
+
+  totp --current --secret JBSWY3DPEHPK3PXP
+
+  TOTP_SECRET=JBSWY3DPEHPK3PXP totp --current
+
+  totp --validate 482916 --secret JBSWY3DPEHPK3PXP
+
+  TOTP_SECRET=JBSWY3DPEHPK3PXP totp --validate 123456
+
+  totp --help
+
+------------------------------------------------------------------------------
+ENVIRONMENT
+------------------------------------------------------------------------------
+
+  TOTP_SECRET               Base32-encoded TOTP secret key; used as fallback when --secret is not provided on the command line
+
+------------------------------------------------------------------------------
+EXIT CODES
+------------------------------------------------------------------------------
+
+  0     Success (help shown, code printed, or validation passed)
+  1     Failure (invalid option, or TOTP code validation failed)
+
+------------------------------------------------------------------------------
+BUGS / LIMITATIONS
+------------------------------------------------------------------------------
+
+  The interactive secret prompt via prompt_secret does not suppress echo (io/console is soft-loaded but $stdin.gets is used instead of $stdin.noecho), so the secret may be visible on screen. Only HMAC-SHA1 is supported; SHA-256 and SHA-512 algorithms defined in RFC 6238 are not implemented. The Base32 decoder silently strips characters outside A-Z2-7 rather than raising an error, which could mask input mistakes.
+
+------------------------------------------------------------------------------
+SEE ALSO
+------------------------------------------------------------------------------
+
+  oathtool(1), openssl(1), qrencode(1), google-authenticator(1), ruby(1)
+
+------------------------------------------------------------------------------
+IMPLEMENTATION NOTES
+------------------------------------------------------------------------------
+
+  The Base32 codec is implemented with pure bit-manipulation, accumulating bits
+  in a buffer and extracting 5-bit (encode) or 8-bit (decode) chunks without any
+  lookup tables beyond the alphabet string. The `qr_ansi` method uses a
+  rescue-from-LoadError pattern to make the `rqrcode` gem entirely optional at
+  runtime, falling back to printing the otpauth URI. The secret can be provided
+  via CLI flag, environment variable, or interactive prompt (with `io/console`
+  also soft-required), creating a layered credential-input strategy.
+
