@@ -1,0 +1,43 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A001 /* TOTPEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F001 /* TOTPEngine.swift */; };
+		A002 /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F002 /* AccountStore.swift */; };
+		A003 /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F003 /* WatchSessionManager.swift */; };
+		A004 /* TOTPWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F004 /* TOTPWatchApp.swift */; };
+		A005 /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F005 /* WatchContentView.swift */; };
+		A006 /* WatchCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F006 /* WatchCodeView.swift */; };
+		A007 /* WatchAddAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F007 /* WatchAddAccountView.swift */; };
+		A008 /* TOTPiPhoneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F008 /* TOTPiPhoneApp.swift */; };
+		A009 /* iPhoneContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F009 /* iPhoneContentView.swift */; };
+		A010 /* iPhoneAddAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010 /* iPhoneAddAccountView.swift */; };
+		A011 /* iPhoneExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F011 /* iPhoneExportView.swift */; };
+		/* Watch Shared copies */
+		B001 /* TOTPEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F001 /* TOTPEngine.swift */; };
+		B002 /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F002 /* AccountStore.swift */; };
+		B003 /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F003 /* WatchSessionManager.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F001 /* TOTPEngine.swift */        = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOTPEngine.swift; sourceTree = "<group>"; };
+		F002 /* AccountStore.swift */      = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStore.swift; sourceTree = "<group>"; };
+		F003 /* WatchSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSessionManager.swift; sourceTree = "<group>"; };
+		F004 /* TOTPWatchApp.swift */      = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOTPWatchApp.swift; sourceTree = "<group>"; };
+		F005 /* WatchContentView.swift */  = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchContentView.swift; sourceTree = "<group>"; };
+		F006 /* WatchCodeView.swift */     = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCodeView.swift; sourceTree = "<group>"; };
+		F007 /* WatchAddAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAddAccountView.swift; sourceTree = "<group>"; };
+		F008 /* TOTPiPhoneApp.swift */     = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOTPiPhoneApp.swift; sourceTree = "<group>"; };
+		F009 /* iPhoneContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneContentView.swift; sourceTree = "<group>"; };
+		F010 /* iPhoneAddAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneAddAccountView.swift; sourceTree = "<group>"; };
+		F011 /* iPhoneExportView.swift */  = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneExportView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+	};
+	rootObject = ROOT;
+}
