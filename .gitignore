@@ -10,7 +10,7 @@
 /test/version_tmp/
 /tmp/
 .ansi.colours
-**/Gemfile.lock
+Gemfile.lock
 
 #Apple
 **/.DS_Store

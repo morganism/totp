@@ -1,0 +1,27 @@
+Register	What it talks to
+"	default Vim register
+*	X11 primary selection
++	system clipboard
+On macOS, both * and + usually map to the same system clipboard.
+On Linux, they are different.
+
+
+Two sets of shortcut to remember: 
+"+yy (copy line to clipboard) and "+yy (copy line to selection); 
+"+p (paste from clipboard) and 
+"*p (paste from selection). 
+" is to select register which is vim's own internal register by default 
+(the way yy and p would work without referencing any type of register).
+
+
+Add this to .vimrc:
+set clipboard=unnamedplus
+or
+# mac
+set clipboard=unnamed
+
+"+y   copy to system clipboard
+"+p   paste from system clipboard
+"*y   copy to primary selection
+"*p   paste from primary selection
+
