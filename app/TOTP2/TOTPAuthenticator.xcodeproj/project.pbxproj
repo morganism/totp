@@ -1,0 +1,539 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		AABBCCDDEEFF00112233445 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 00000000000000000000001E;
+			remoteInfo = "TOTPWatch Watch App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		AABBCCDDEEFF00112233446 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 00000000000000000000001E /* TOTPWatch Watch App */;
+			targetProxy = AABBCCDDEEFF00112233445 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXBuildFile section */
+		0000000000000000000000C9 /* TOTPEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000065 /* TOTPEngine.swift */; };
+		0000000000000000000000CA /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000066 /* AccountStore.swift */; };
+		0000000000000000000000CB /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000067 /* WatchSessionManager.swift */; };
+		0000000000000000000000D2 /* TOTPiPhoneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006E /* TOTPiPhoneApp.swift */; };
+		0000000000000000000000D3 /* iPhoneContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006F /* iPhoneContentView.swift */; };
+		0000000000000000000000D4 /* iPhoneAddAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000070 /* iPhoneAddAccountView.swift */; };
+		0000000000000000000000D5 /* iPhoneExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000071 /* iPhoneExportView.swift */; };
+		0000000000000000000000DC /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000000000000000000000082 /* WatchConnectivity.framework */; };
+		0000000000000000000000E6 /* TOTPWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 00000000000000000000001F /* TOTPWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		00000000000000000000012D /* TOTPEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000065 /* TOTPEngine.swift */; };
+		00000000000000000000012E /* AccountStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000066 /* AccountStore.swift */; };
+		00000000000000000000012F /* WatchSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000067 /* WatchSessionManager.swift */; };
+		000000000000000000000136 /* TOTPWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000078 /* TOTPWatchApp.swift */; };
+		000000000000000000000137 /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000079 /* WatchContentView.swift */; };
+		000000000000000000000138 /* WatchCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000007A /* WatchCodeView.swift */; };
+		000000000000000000000139 /* WatchAddAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000007B /* WatchAddAccountView.swift */; };
+		000000000000000000000140 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000000000000000000000082 /* WatchConnectivity.framework */; };
+		000000000000000000000141 /* WatchKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 000000000000000000000083 /* WatchKit.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		000000000000000000000019 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				0000000000000000000000E6 /* TOTPWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		000000000000000000000015 /* TOTPAuthenticator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TOTPAuthenticator.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		00000000000000000000001F /* TOTPWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "TOTPWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000065 /* TOTPEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOTPEngine.swift; sourceTree = "<group>"; };
+		000000000000000000000066 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStore.swift; sourceTree = "<group>"; };
+		000000000000000000000067 /* WatchSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSessionManager.swift; sourceTree = "<group>"; };
+		00000000000000000000006E /* TOTPiPhoneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOTPiPhoneApp.swift; sourceTree = "<group>"; };
+		00000000000000000000006F /* iPhoneContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneContentView.swift; sourceTree = "<group>"; };
+		000000000000000000000070 /* iPhoneAddAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneAddAccountView.swift; sourceTree = "<group>"; };
+		000000000000000000000071 /* iPhoneExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneExportView.swift; sourceTree = "<group>"; };
+		000000000000000000000078 /* TOTPWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOTPWatchApp.swift; sourceTree = "<group>"; };
+		000000000000000000000079 /* WatchContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchContentView.swift; sourceTree = "<group>"; };
+		00000000000000000000007A /* WatchCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCodeView.swift; sourceTree = "<group>"; };
+		00000000000000000000007B /* WatchAddAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAddAccountView.swift; sourceTree = "<group>"; };
+		000000000000000000000082 /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
+		000000000000000000000083 /* WatchKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchKit.framework; path = System/Library/Frameworks/WatchKit.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		000000000000000000000017 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0000000000000000000000DC /* WatchConnectivity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000021 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000140 /* WatchConnectivity.framework in Frameworks */,
+				000000000000000000000141 /* WatchKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000000000000000000000005 = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000000A /* Shared */,
+				00000000000000000000000B /* TOTPAuthenticator */,
+				00000000000000000000000C /* TOTPWatch Watch App */,
+				00000000000000000000000D /* Frameworks */,
+				000000000000000000000006 /* Products */,
+			);
+			indentWidth = 2;
+			sourceTree = "<group>";
+			tabWidth = 2;
+		};
+		000000000000000000000006 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000015 /* TOTPAuthenticator.app */,
+				00000000000000000000001F /* TOTPWatch Watch App.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000A /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000065 /* TOTPEngine.swift */,
+				000000000000000000000066 /* AccountStore.swift */,
+				000000000000000000000067 /* WatchSessionManager.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000B /* TOTPAuthenticator */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000006E /* TOTPiPhoneApp.swift */,
+				00000000000000000000006F /* iPhoneContentView.swift */,
+				000000000000000000000070 /* iPhoneAddAccountView.swift */,
+				000000000000000000000071 /* iPhoneExportView.swift */,
+			);
+			path = TOTPAuthenticator;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000C /* TOTPWatch Watch App */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000078 /* TOTPWatchApp.swift */,
+				000000000000000000000079 /* WatchContentView.swift */,
+				00000000000000000000007A /* WatchCodeView.swift */,
+				00000000000000000000007B /* WatchAddAccountView.swift */,
+			);
+			path = "TOTPWatch Watch App";
+			sourceTree = "<group>";
+		};
+		00000000000000000000000D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000082 /* WatchConnectivity.framework */,
+				000000000000000000000083 /* WatchKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		000000000000000000000014 /* TOTPAuthenticator */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 00000000000000000000001A /* Build configuration list for PBXNativeTarget "TOTPAuthenticator" */;
+			buildPhases = (
+				000000000000000000000016 /* Sources */,
+				000000000000000000000017 /* Frameworks */,
+				000000000000000000000018 /* Resources */,
+				000000000000000000000019 /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AABBCCDDEEFF00112233446 /* PBXTargetDependency */,
+			);
+			name = TOTPAuthenticator;
+			productName = TOTPAuthenticator;
+			productReference = 000000000000000000000015 /* TOTPAuthenticator.app */;
+			productType = "com.apple.product-type.application";
+		};
+		00000000000000000000001E /* TOTPWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000023 /* Build configuration list for PBXNativeTarget "TOTPWatch Watch App" */;
+			buildPhases = (
+				000000000000000000000020 /* Sources */,
+				000000000000000000000021 /* Frameworks */,
+				000000000000000000000022 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "TOTPWatch Watch App";
+			productName = "TOTPWatch Watch App";
+			productReference = 00000000000000000000001F /* TOTPWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1400;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					000000000000000000000014 = {
+						CreatedOnToolsVersion = 14.0;
+					};
+					00000000000000000000001E = {
+						CreatedOnToolsVersion = 14.0;
+					};
+				};
+			};
+			buildConfigurationList = 000000000000000000000002 /* Build configuration list for PBXProject "TOTPAuthenticator" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 000000000000000000000005;
+			productRefGroup = 000000000000000000000006 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				000000000000000000000014 /* TOTPAuthenticator */,
+				00000000000000000000001E /* TOTPWatch Watch App */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		000000000000000000000018 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000022 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		000000000000000000000016 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0000000000000000000000C9 /* TOTPEngine.swift in Sources */,
+				0000000000000000000000CA /* AccountStore.swift in Sources */,
+				0000000000000000000000CB /* WatchSessionManager.swift in Sources */,
+				0000000000000000000000D2 /* TOTPiPhoneApp.swift in Sources */,
+				0000000000000000000000D3 /* iPhoneContentView.swift in Sources */,
+				0000000000000000000000D4 /* iPhoneAddAccountView.swift in Sources */,
+				0000000000000000000000D5 /* iPhoneExportView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000020 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00000000000000000000012D /* TOTPEngine.swift in Sources */,
+				00000000000000000000012E /* AccountStore.swift in Sources */,
+				00000000000000000000012F /* WatchSessionManager.swift in Sources */,
+				000000000000000000000136 /* TOTPWatchApp.swift in Sources */,
+				000000000000000000000137 /* WatchContentView.swift in Sources */,
+				000000000000000000000138 /* WatchCodeView.swift in Sources */,
+				000000000000000000000139 /* WatchAddAccountView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		000000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_DECL = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = Z85GC228P5;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		000000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_DECL = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = Z85GC228P5;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		00000000000000000000001B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSTECATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				BUNDLE_IDENTIFIER = com.totp.authenticator;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan TOTP QR codes";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LE_SWIFT_VERSION = 5.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.morganism.totp.authenticator;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		00000000000000000000001C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSTECATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				BUNDLE_IDENTIFIER = com.totp.authenticator;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan TOTP QR codes";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LE_SWIFT_VERSION = 5.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.morganism.totp.authenticator;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		000000000000000000000024 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				BUNDLE_IDENTIFIER = com.totp.authenticator.watchkitapp;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TOTP;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.totp.authenticator;
+				INFOPLIST_KEY_WKWatchOnly = NO;
+				LE_SWIFT_VERSION = 5.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.morganism.totp.authenticator.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.6;
+			};
+			name = Debug;
+		};
+		000000000000000000000025 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				BUNDLE_IDENTIFIER = com.totp.authenticator.watchkitapp;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TOTP;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.totp.authenticator;
+				INFOPLIST_KEY_WKWatchOnly = NO;
+				LE_SWIFT_VERSION = 5.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.morganism.totp.authenticator.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.6;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		000000000000000000000002 /* Build configuration list for PBXProject "TOTPAuthenticator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000003 /* Debug */,
+				000000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		00000000000000000000001A /* Build configuration list for PBXNativeTarget "TOTPAuthenticator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00000000000000000000001B /* Debug */,
+				00000000000000000000001C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000023 /* Build configuration list for PBXNativeTarget "TOTPWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000024 /* Debug */,
+				000000000000000000000025 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 000000000000000000000001 /* Project object */;
+}
