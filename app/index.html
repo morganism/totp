@@ -1,0 +1,2687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#007aff">
+  <meta name="color-scheme" content="light dark">
+  <title>TOTP Authenticator</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Bootstrap 5.3 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    /* CSS Custom Properties for Theming */
+    :root {
+      /* Colors - Light Mode */
+      --totp-primary: #007aff;
+      --totp-accent: #5856d6;
+      --totp-success: #34c759;
+      --totp-danger: #ff3b30;
+      --totp-warning: #ff9500;
+      --totp-background: #f2f2f7;
+      --totp-surface: rgba(255, 255, 255, 0.85);
+      --totp-surface-hover: rgba(255, 255, 255, 0.95);
+      --totp-text: #000000;
+      --totp-text-secondary: #8e8e93;
+      --totp-border: rgba(0, 0, 0, 0.1);
+      --totp-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      --totp-shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.16);
+
+      /* Sizing */
+      --totp-font-base: 16px;
+      --totp-font-code: 48px;
+      --totp-border-radius: 16px;
+      --totp-border-radius-sm: 12px;
+      --totp-border-radius-lg: 20px;
+      --totp-spacing: 20px;
+
+      /* Effects */
+      --totp-glass-opacity: 0.85;
+      --totp-blur: 20px;
+      --totp-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* Bootstrap overrides */
+      --bs-primary: #007aff;
+      --bs-secondary: #8e8e93;
+      --bs-border-radius: 16px;
+      --bs-border-radius-sm: 12px;
+      --bs-border-radius-lg: 20px;
+      --bs-body-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --totp-background: #000000;
+      --totp-surface: rgba(28, 28, 30, 0.85);
+      --totp-surface-hover: rgba(44, 44, 46, 0.95);
+      --totp-text: #ffffff;
+      --totp-text-secondary: #8e8e93;
+      --totp-border: rgba(255, 255, 255, 0.1);
+      --totp-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --totp-shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Global Styles */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--bs-body-font-family);
+      font-size: var(--totp-font-base);
+      background: var(--totp-background);
+      color: var(--totp-text);
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    /* Glass Morphism Container */
+    .glass-container {
+      background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.05) 100%);
+      backdrop-filter: blur(var(--totp-blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--totp-blur)) saturate(180%);
+      border-radius: var(--totp-border-radius);
+      border: 1px solid var(--totp-border);
+      box-shadow: var(--totp-shadow);
+    }
+
+    /* Navigation */
+    .navbar {
+      background: var(--totp-surface);
+      backdrop-filter: blur(var(--totp-blur));
+      -webkit-backdrop-filter: blur(var(--totp-blur));
+      border-radius: var(--totp-border-radius-lg);
+      box-shadow: var(--totp-shadow);
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--totp-primary);
+    }
+
+    /* TOTP Card */
+    .totp-card {
+      background: var(--totp-surface);
+      backdrop-filter: blur(var(--totp-blur));
+      -webkit-backdrop-filter: blur(var(--totp-blur));
+      border-radius: var(--totp-border-radius);
+      border: 1px solid var(--totp-border);
+      box-shadow: var(--totp-shadow);
+      transition: var(--totp-transition);
+      overflow: hidden;
+    }
+
+    .totp-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--totp-shadow-hover);
+      background: var(--totp-surface-hover);
+    }
+
+    .totp-card .card-header {
+      background: transparent;
+      border-bottom: 1px solid var(--totp-border);
+      padding: 1rem 1.25rem;
+    }
+
+    .totp-card .card-body {
+      padding: 2rem 1.25rem;
+    }
+
+    .totp-card .card-footer {
+      background: transparent;
+      border-top: 1px solid var(--totp-border);
+      padding: 0.75rem 1.25rem;
+    }
+
+    /* TOTP Code Display */
+    .totp-code {
+      font-size: var(--totp-font-code);
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      font-variant-numeric: tabular-nums;
+      color: var(--totp-primary);
+      cursor: pointer;
+      user-select: none;
+      transition: var(--totp-transition);
+    }
+
+    .totp-code:hover {
+      transform: scale(1.05);
+      color: var(--totp-accent);
+    }
+
+    .totp-code:active {
+      transform: scale(0.98);
+    }
+
+    /* Countdown Progress */
+    .countdown-progress {
+      height: 4px;
+      background: var(--totp-border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .countdown-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--totp-primary), var(--totp-accent));
+      transition: width 1s linear;
+      border-radius: 2px;
+    }
+
+    .countdown-bar.expiring {
+      background: linear-gradient(90deg, var(--totp-danger), var(--totp-warning));
+    }
+
+    /* Buttons */
+    .btn {
+      border-radius: var(--totp-border-radius-sm);
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      transition: var(--totp-transition);
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--totp-primary), var(--totp-accent));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 122, 255, 0.3);
+    }
+
+    .btn-icon {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--totp-surface);
+      border: 1px solid var(--totp-border);
+      color: var(--totp-text);
+      transition: var(--totp-transition);
+    }
+
+    .btn-icon:hover {
+      background: var(--totp-surface-hover);
+      transform: scale(1.1);
+    }
+
+    /* Modal */
+    .modal-content {
+      background: var(--totp-surface);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border-radius: var(--totp-border-radius-lg);
+      border: 1px solid var(--totp-border);
+      box-shadow: var(--totp-shadow-hover);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid var(--totp-border);
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--totp-border);
+    }
+
+    /* Form Controls */
+    .form-control, .form-select {
+      background: var(--totp-surface);
+      border: 1px solid var(--totp-border);
+      border-radius: var(--totp-border-radius-sm);
+      color: var(--totp-text);
+      transition: var(--totp-transition);
+      padding: 0.75rem 1rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+      background: var(--totp-surface-hover);
+      border-color: var(--totp-primary);
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+      color: var(--totp-text);
+    }
+
+    .form-label {
+      color: var(--totp-text);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--totp-text-secondary);
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    /* Toast Notifications */
+    .toast {
+      background: var(--totp-surface);
+      backdrop-filter: blur(var(--totp-blur));
+      -webkit-backdrop-filter: blur(var(--totp-blur));
+      border: 1px solid var(--totp-border);
+      border-radius: var(--totp-border-radius);
+      box-shadow: var(--totp-shadow);
+    }
+
+    /* Utilities */
+    .text-primary { color: var(--totp-primary) !important; }
+    .text-secondary { color: var(--totp-text-secondary) !important; }
+    .bg-primary { background: var(--totp-primary) !important; }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    /* Loading State */
+    .skeleton {
+      background: linear-gradient(90deg,
+        var(--totp-border) 25%,
+        rgba(255, 255, 255, 0.1) 50%,
+        var(--totp-border) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s ease-in-out infinite;
+      border-radius: var(--totp-border-radius-sm);
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      :root {
+        --totp-font-code: 36px;
+        --totp-spacing: 16px;
+      }
+
+      .navbar {
+        border-radius: var(--totp-border-radius);
+      }
+
+      .totp-code {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <div class="container-fluid py-4" style="max-width: 1200px;">
+    <nav class="navbar">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <span class="navbar-brand mb-0">🔐 TOTP Authenticator</span>
+        <div class="d-flex gap-2">
+          <button class="btn-icon" id="settingsBtn" title="Settings" onclick="CustomizationManager.openSettings()">
+            ⚙️
+          </button>
+          <button class="btn-icon" id="exportAllBtn" title="Export all accounts" onclick="ImportExportManager.exportAll()">
+            📤
+          </button>
+          <button class="btn-icon" id="themeToggle" title="Toggle theme">
+            <span id="themeIcon">🌙</span>
+          </button>
+          <button class="btn btn-primary" id="addAccountBtn">
+            <span>+ Add Account</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Search Bar -->
+    <div class="mb-3">
+      <input type="text" class="form-control" id="searchInput" placeholder="🔍 Search accounts... (Press / to focus)" style="max-width: 500px; margin: 0 auto;">
+    </div>
+
+    <!-- Accounts Grid -->
+    <div class="row g-3" id="accountsGrid">
+      <!-- Empty state - will be replaced when accounts are loaded -->
+      <div class="col-12">
+        <div class="glass-container empty-state">
+          <div class="empty-state-icon">🔑</div>
+          <h3>No Accounts Yet</h3>
+          <p>Add your first TOTP account to get started</p>
+          <button class="btn btn-primary mt-3" onclick="document.getElementById('addAccountBtn').click()">
+            Add Account
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Account Modal -->
+  <div class="modal fade" id="addAccountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Account</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#manualTab">Manual</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#qrTab">Scan QR</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#importTab">Import</button>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- Manual Entry Tab -->
+            <div class="tab-pane fade show active" id="manualTab">
+              <form id="manualForm">
+                <div class="mb-3">
+                  <label class="form-label">Account / Email</label>
+                  <input type="text" class="form-control" id="manualAccount" placeholder="user@example.com" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Issuer / Service</label>
+                  <input type="text" class="form-control" id="manualIssuer" placeholder="GitHub">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Secret Key (Base32)</label>
+                  <input type="text" class="form-control" id="manualSecret" placeholder="JBSWY3DPEHPK3PXP" required>
+                  <small class="text-secondary">Enter the secret key from your service</small>
+                </div>
+                <div class="row">
+                  <div class="col-6 mb-3">
+                    <label class="form-label">Digits</label>
+                    <select class="form-select" id="manualDigits">
+                      <option value="6" selected>6 digits</option>
+                      <option value="8">8 digits</option>
+                    </select>
+                  </div>
+                  <div class="col-6 mb-3">
+                    <label class="form-label">Interval</label>
+                    <select class="form-select" id="manualInterval">
+                      <option value="30" selected>30 seconds</option>
+                      <option value="60">60 seconds</option>
+                    </select>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- QR Scan Tab -->
+            <div class="tab-pane fade" id="qrTab">
+              <div class="text-center">
+                <div id="qrReader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
+                <div id="qrStatus" class="mt-3"></div>
+                <button class="btn btn-secondary mt-3" id="startScanBtn" onclick="QRManager.startScanning()">
+                  Start Camera
+                </button>
+                <button class="btn btn-secondary mt-3" id="stopScanBtn" onclick="QRManager.stopScanning()" style="display: none;">
+                  Stop Camera
+                </button>
+                <div class="mt-3">
+                  <label class="btn btn-outline-primary">
+                    📁 Upload QR Image
+                    <input type="file" accept="image/*" id="qrFileInput" onchange="QRManager.scanFromFile(event)" style="display: none;">
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Import Tab -->
+            <div class="tab-pane fade" id="importTab">
+              <div class="mb-3">
+                <label class="form-label">Import Format</label>
+                <select class="form-select" id="importFormat">
+                  <option value="json">JSON</option>
+                  <option value="base64">Base64</option>
+                  <option value="uri">otpauth:// URI</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Import Data</label>
+                <textarea class="form-control" id="importData" rows="6" placeholder="Paste JSON, Base64, or otpauth:// URI here"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="btn btn-outline-primary w-100">
+                  📁 Or Upload File
+                  <input type="file" accept=".json,.txt" id="importFileInput" onchange="ImportExportManager.handleFileUpload(event)" style="display: none;">
+                </label>
+              </div>
+              <button type="button" class="btn btn-primary w-100" onclick="ImportExportManager.importData()">
+                Import Accounts
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveAccountBtn">Add Account</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Account Modal -->
+  <div class="modal fade" id="editAccountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Account</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm">
+            <input type="hidden" id="editAccountId">
+            <div class="mb-3">
+              <label class="form-label">Account / Email</label>
+              <input type="text" class="form-control" id="editAccount" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Issuer / Service</label>
+              <input type="text" class="form-control" id="editIssuer">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Secret Key (Base32)</label>
+              <input type="password" class="form-control" id="editSecret" required>
+              <button type="button" class="btn btn-sm btn-link" id="toggleSecretBtn" onclick="UIManager.toggleSecretVisibility()">
+                Show Secret
+              </button>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label">Digits</label>
+                <select class="form-select" id="editDigits">
+                  <option value="6">6 digits</option>
+                  <option value="8">8 digits</option>
+                </select>
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label">Interval</label>
+                <select class="form-select" id="editInterval">
+                  <option value="30">30 seconds</option>
+                  <option value="60">60 seconds</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="updateAccountBtn">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete Account?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="deleteAccountId">
+          <p>Are you sure you want to delete this account?</p>
+          <div class="alert alert-warning">
+            <strong id="deleteAccountName"></strong>
+            <br>
+            <small class="text-secondary">This action cannot be undone.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Menu Modal (Dropdown alternative for mobile) -->
+  <div class="modal fade" id="accountMenuModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="menuAccountName">Account</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-2">
+          <input type="hidden" id="menuAccountId">
+          <div class="list-group list-group-flush">
+            <button class="list-group-item list-group-item-action" onclick="UIManager.editAccount()">
+              ✏️ Edit
+            </button>
+            <button class="list-group-item list-group-item-action" onclick="QRManager.showQRCode()">
+              📱 Show QR Code
+            </button>
+            <button class="list-group-item list-group-item-action" onclick="UIManager.showSecret()">
+              👁️ Show Secret
+            </button>
+            <button class="list-group-item list-group-item-action" onclick="UIManager.exportAccount()">
+              📤 Export
+            </button>
+            <button class="list-group-item list-group-item-action text-danger" onclick="UIManager.deleteAccount()">
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code Display Modal -->
+  <div class="modal fade" id="qrDisplayModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="qrDisplayTitle">QR Code</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <div id="qrCodeContainer" style="display: inline-block;"></div>
+          <div class="mt-3">
+            <small class="text-secondary">Scan with your authenticator app</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal fade" id="settingsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Settings</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item">
+              <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#appearanceTab">Appearance</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" data-bs-toggle="tab" data-bs-target="#advancedTab">Advanced</button>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- Appearance Tab -->
+            <div class="tab-pane fade show active" id="appearanceTab">
+              <div class="mb-4">
+                <label class="form-label fw-bold">Theme Presets</label>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-outline-primary text-start" onclick="CustomizationManager.applyPreset('apple')">
+                    🍎 Classic Apple (Default)
+                  </button>
+                  <button class="btn btn-outline-primary text-start" onclick="CustomizationManager.applyPreset('dark')">
+                    🌑 Dark Mode
+                  </button>
+                  <button class="btn btn-outline-primary text-start" onclick="CustomizationManager.applyPreset('contrast')">
+                    ⚫ High Contrast
+                  </button>
+                </div>
+              </div>
+
+              <hr>
+
+              <div class="row mb-3">
+                <div class="col-6">
+                  <label class="form-label">Primary Color</label>
+                  <input type="color" class="form-control form-control-color" id="primaryColor" value="#007aff" onchange="CustomizationManager.updateColor('primary', this.value)">
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Accent Color</label>
+                  <input type="color" class="form-control form-control-color" id="accentColor" value="#5856d6" onchange="CustomizationManager.updateColor('accent', this.value)">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Code Font Size: <span id="codeSizeValue">48px</span></label>
+                <input type="range" class="form-range" id="codeSize" min="24" max="72" value="48" oninput="CustomizationManager.updateSize('code', this.value)">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Border Radius: <span id="radiusValue">16px</span></label>
+                <input type="range" class="form-range" id="borderRadius" min="0" max="32" value="16" oninput="CustomizationManager.updateSize('radius', this.value)">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Glass Opacity: <span id="opacityValue">85%</span></label>
+                <input type="range" class="form-range" id="glassOpacity" min="50" max="100" value="85" oninput="CustomizationManager.updateOpacity(this.value)">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Blur Effect: <span id="blurValue">20px</span></label>
+                <input type="range" class="form-range" id="blurEffect" min="0" max="40" value="20" oninput="CustomizationManager.updateBlur(this.value)">
+              </div>
+
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="enableAnimations" checked onchange="CustomizationManager.toggleAnimations(this.checked)">
+                <label class="form-check-label" for="enableAnimations">
+                  Enable Animations
+                </label>
+              </div>
+            </div>
+
+            <!-- Advanced Tab -->
+            <div class="tab-pane fade" id="advancedTab">
+              <div class="mb-3">
+                <label class="form-label">Base Font Size: <span id="baseFontValue">16px</span></label>
+                <input type="range" class="form-range" id="baseFontSize" min="12" max="24" value="16" oninput="CustomizationManager.updateSize('base', this.value)">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Spacing: <span id="spacingValue">20px</span></label>
+                <input type="range" class="form-range" id="spacing" min="12" max="32" value="20" oninput="CustomizationManager.updateSize('spacing', this.value)">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Shadow Intensity</label>
+                <select class="form-select" id="shadowIntensity" onchange="CustomizationManager.updateShadow(this.value)">
+                  <option value="none">None</option>
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Animation Speed</label>
+                <select class="form-select" id="animationSpeed" onchange="CustomizationManager.updateAnimationSpeed(this.value)">
+                  <option value="fast">Fast (0.2s)</option>
+                  <option value="medium" selected>Medium (0.3s)</option>
+                  <option value="slow">Slow (0.5s)</option>
+                </select>
+              </div>
+
+              <hr>
+
+              <div class="alert alert-warning">
+                <small><strong>Warning:</strong> Resetting will restore default Apple-style theme and cannot be undone.</small>
+              </div>
+
+              <button class="btn btn-danger w-100" onclick="CustomizationManager.resetToDefaults()">
+                Reset to Defaults
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Export Accounts</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Export Format</label>
+            <select class="form-select" id="exportFormat">
+              <option value="json">JSON (Full details)</option>
+              <option value="base64">Base64 (Compact)</option>
+              <option value="uri">otpauth:// URIs (One per line)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Export Data</label>
+            <textarea class="form-control" id="exportData" rows="8" readonly></textarea>
+          </div>
+          <div class="d-grid gap-2">
+            <button type="button" class="btn btn-primary" onclick="ImportExportManager.copyExportData()">
+              📋 Copy to Clipboard
+            </button>
+            <button type="button" class="btn btn-outline-primary" onclick="ImportExportManager.downloadExport()">
+              💾 Download File
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- QR Code Libraries -->
+  <script src="lib/qrcode.min.js"></script>
+  <script src="lib/html5-qrcode.min.js"></script>
+
+  <script>
+    // ============================================================================
+    // TOTP Core Engine - RFC 6238 Implementation
+    // Based on /Users/morgan/src/morganism/totp/totp.rb
+    // ============================================================================
+
+    const TOTP = {
+      // Base32 alphabet (matching Ruby line 22)
+      ALPHABET: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+
+      /**
+       * Base32 encode - matching Ruby lines 30-47
+       * @param {Uint8Array|string} input - bytes to encode
+       * @returns {string} Base32 encoded string
+       */
+      encodeBase32(input) {
+        const bytes = typeof input === 'string'
+          ? new TextEncoder().encode(input)
+          : input;
+
+        let output = '';
+        let buf = 0;
+        let bits = 0;
+
+        for (let i = 0; i < bytes.length; i++) {
+          buf = (buf << 8) | bytes[i];
+          bits += 8;
+
+          while (bits >= 5) {
+            bits -= 5;
+            output += this.ALPHABET[(buf >> bits) & 0x1f];
+          }
+        }
+
+        if (bits > 0) {
+          output += this.ALPHABET[(buf << (5 - bits)) & 0x1f];
+        }
+
+        return output;
+      },
+
+      /**
+       * Base32 decode - matching Ruby lines 49-68
+       * @param {string} str - Base32 encoded string
+       * @returns {Uint8Array} decoded bytes
+       */
+      decodeBase32(str) {
+        // Clean input: uppercase, remove =, remove invalid chars
+        str = str.toUpperCase().replace(/=/g, '').replace(/[^A-Z2-7]/g, '');
+
+        const out = [];
+        let buf = 0;
+        let bits = 0;
+
+        for (let i = 0; i < str.length; i++) {
+          const val = this.ALPHABET.indexOf(str[i]);
+          if (val === -1) {
+            throw new Error(`Invalid Base32 character: ${str[i]}`);
+          }
+
+          buf = (buf << 5) | val;
+          bits += 5;
+
+          if (bits >= 8) {
+            bits -= 8;
+            out.push((buf >> bits) & 0xff);
+          }
+        }
+
+        return new Uint8Array(out);
+      },
+
+      /**
+       * HMAC-SHA1 implementation using Web Crypto API
+       * @param {Uint8Array} key - secret key
+       * @param {Uint8Array} message - message to hash
+       * @returns {Promise<Uint8Array>} HMAC bytes
+       */
+      async hmacSHA1(key, message) {
+        const cryptoKey = await crypto.subtle.importKey(
+          'raw',
+          key,
+          { name: 'HMAC', hash: 'SHA-1' },
+          false,
+          ['sign']
+        );
+
+        const signature = await crypto.subtle.sign('HMAC', cryptoKey, message);
+        return new Uint8Array(signature);
+      },
+
+      /**
+       * HOTP - HMAC-based One-Time Password (RFC 4226)
+       * Matching Ruby lines 84-96
+       * @param {string} secret - Base32 encoded secret
+       * @param {number} counter - counter value
+       * @param {number} digits - number of digits (default 6)
+       * @returns {Promise<string>} OTP code
+       */
+      async hotp(secret, counter, digits = 6) {
+        const key = this.decodeBase32(secret);
+
+        // Create 8-byte big-endian counter (matching Ruby's pack('Q>'))
+        const msg = new ArrayBuffer(8);
+        const view = new DataView(msg);
+        view.setUint32(0, Math.floor(counter / 0x100000000), false);
+        view.setUint32(4, counter & 0xffffffff, false);
+
+        const hmac = await this.hmacSHA1(key, new Uint8Array(msg));
+
+        // Dynamic truncation (matching Ruby lines 89-93)
+        const offset = hmac[19] & 0x0f;
+        const code = ((hmac[offset] & 0x7f) << 24) |
+                     ((hmac[offset + 1] & 0xff) << 16) |
+                     ((hmac[offset + 2] & 0xff) << 8) |
+                     (hmac[offset + 3] & 0xff);
+
+        // Generate OTP (matching Ruby line 95)
+        return (code % Math.pow(10, digits)).toString().padStart(digits, '0');
+      },
+
+      /**
+       * TOTP - Time-based One-Time Password (RFC 6238)
+       * Matching Ruby lines 99-101
+       * @param {string} secret - Base32 encoded secret
+       * @param {number} time - Unix timestamp in milliseconds (default: now)
+       * @param {number} digits - number of digits (default 6)
+       * @param {number} interval - time step in seconds (default 30)
+       * @returns {Promise<string>} OTP code
+       */
+      async totp(secret, time = Date.now(), digits = 6, interval = 30) {
+        const counter = Math.floor(time / 1000 / interval);
+        return this.hotp(secret, counter, digits);
+      },
+
+      /**
+       * Validate a TOTP code with drift tolerance
+       * @param {string} secret - Base32 encoded secret
+       * @param {string} code - code to validate
+       * @param {number} time - Unix timestamp in milliseconds
+       * @param {number} digits - number of digits
+       * @param {number} interval - time step in seconds
+       * @param {number} drift - number of windows to check (±drift)
+       * @returns {Promise<boolean>} true if valid
+       */
+      async validate(secret, code, time = Date.now(), digits = 6, interval = 30, drift = 1) {
+        code = code.toString().trim();
+        const counter = Math.floor(time / 1000 / interval);
+
+        for (let offset = -drift; offset <= drift; offset++) {
+          const testCode = await this.hotp(secret, counter + offset, digits);
+          if (testCode === code) {
+            return true;
+          }
+        }
+
+        return false;
+      },
+
+      /**
+       * Parse otpauth:// URI (matching Ruby lines 119-127)
+       * @param {string} uri - otpauth URI
+       * @returns {object} parsed account data
+       */
+      parseOtpauthURI(uri) {
+        if (!uri.startsWith('otpauth://totp/')) {
+          throw new Error('Invalid otpauth URI');
+        }
+
+        const url = new URL(uri);
+        const label = decodeURIComponent(url.pathname.substring(6)); // Remove '/totp/'
+        const params = new URLSearchParams(url.search);
+
+        // Parse label (may be "Issuer:Account" or just "Account")
+        let issuer = params.get('issuer') || '';
+        let account = label;
+
+        if (label.includes(':')) {
+          const parts = label.split(':');
+          issuer = issuer || parts[0];
+          account = parts.slice(1).join(':');
+        }
+
+        return {
+          account: account,
+          issuer: issuer,
+          secret: params.get('secret') || '',
+          digits: parseInt(params.get('digits') || '6'),
+          interval: parseInt(params.get('period') || '30'),
+          algorithm: params.get('algorithm') || 'SHA1'
+        };
+      },
+
+      /**
+       * Generate otpauth:// URI
+       * @param {object} account - account data
+       * @returns {string} otpauth URI
+       */
+      generateOtpauthURI(account) {
+        const label = account.issuer
+          ? `${encodeURIComponent(account.issuer)}:${encodeURIComponent(account.account)}`
+          : encodeURIComponent(account.account);
+
+        const params = new URLSearchParams({
+          secret: account.secret,
+          algorithm: account.algorithm || 'SHA1',
+          digits: account.digits || 6,
+          period: account.interval || 30
+        });
+
+        if (account.issuer) {
+          params.append('issuer', account.issuer);
+        }
+
+        return `otpauth://totp/${label}?${params.toString()}`;
+      },
+
+      /**
+       * Generate a random Base32 secret
+       * @param {number} byteLength - length in bytes (default 20)
+       * @returns {string} Base32 encoded secret
+       */
+      generateSecret(byteLength = 20) {
+        const bytes = new Uint8Array(byteLength);
+        crypto.getRandomValues(bytes);
+        return this.encodeBase32(bytes);
+      },
+
+      /**
+       * Get remaining seconds in current time window
+       * @param {number} interval - time step in seconds
+       * @returns {number} seconds remaining
+       */
+      getRemainingSeconds(interval = 30) {
+        return interval - (Math.floor(Date.now() / 1000) % interval);
+      },
+
+      /**
+       * Get progress percentage in current time window
+       * @param {number} interval - time step in seconds
+       * @returns {number} percentage (0-100)
+       */
+      getProgress(interval = 30) {
+        const remaining = this.getRemainingSeconds(interval);
+        return (remaining / interval) * 100;
+      }
+    };
+
+    // ============================================================================
+    // Storage Manager - IndexedDB + LocalStorage
+    // ============================================================================
+
+    const StorageManager = {
+      DB_NAME: 'totpDB',
+      DB_VERSION: 1,
+      STORE_NAME: 'accounts',
+      db: null,
+
+      /**
+       * Initialize IndexedDB
+       */
+      async init() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            this.db = request.result;
+            resolve();
+          };
+
+          request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+
+            if (!db.objectStoreNames.contains(this.STORE_NAME)) {
+              const store = db.createObjectStore(this.STORE_NAME, { keyPath: 'id' });
+              store.createIndex('account', 'account', { unique: false });
+              store.createIndex('issuer', 'issuer', { unique: false });
+              store.createIndex('order', 'order', { unique: false });
+            }
+          };
+        });
+      },
+
+      /**
+       * Get all accounts
+       */
+      async getAccounts() {
+        if (!this.db) await this.init();
+
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.STORE_NAME], 'readonly');
+          const store = transaction.objectStore(this.STORE_NAME);
+          const request = store.getAll();
+
+          request.onsuccess = () => {
+            const accounts = request.result;
+            accounts.sort((a, b) => (a.order || 0) - (b.order || 0));
+            resolve(accounts);
+          };
+          request.onerror = () => reject(request.error);
+        });
+      },
+
+      /**
+       * Add account
+       */
+      async addAccount(account) {
+        if (!this.db) await this.init();
+
+        // Generate ID if not present
+        if (!account.id) {
+          account.id = this.generateId();
+        }
+
+        // Set timestamps
+        account.createdAt = account.createdAt || Date.now();
+        account.updatedAt = Date.now();
+
+        // Set order
+        if (account.order === undefined) {
+          const accounts = await this.getAccounts();
+          account.order = accounts.length;
+        }
+
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.STORE_NAME], 'readwrite');
+          const store = transaction.objectStore(this.STORE_NAME);
+          const request = store.add(account);
+
+          request.onsuccess = () => resolve(account);
+          request.onerror = () => reject(request.error);
+        });
+      },
+
+      /**
+       * Update account
+       */
+      async updateAccount(id, updates) {
+        if (!this.db) await this.init();
+
+        const account = await this.getAccount(id);
+        if (!account) {
+          throw new Error('Account not found');
+        }
+
+        Object.assign(account, updates);
+        account.updatedAt = Date.now();
+
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.STORE_NAME], 'readwrite');
+          const store = transaction.objectStore(this.STORE_NAME);
+          const request = store.put(account);
+
+          request.onsuccess = () => resolve(account);
+          request.onerror = () => reject(request.error);
+        });
+      },
+
+      /**
+       * Get single account
+       */
+      async getAccount(id) {
+        if (!this.db) await this.init();
+
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.STORE_NAME], 'readonly');
+          const store = transaction.objectStore(this.STORE_NAME);
+          const request = store.get(id);
+
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      },
+
+      /**
+       * Delete account
+       */
+      async deleteAccount(id) {
+        if (!this.db) await this.init();
+
+        return new Promise((resolve, reject) => {
+          const transaction = this.db.transaction([this.STORE_NAME], 'readwrite');
+          const store = transaction.objectStore(this.STORE_NAME);
+          const request = store.delete(id);
+
+          request.onsuccess = () => resolve();
+          request.onerror = () => reject(request.error);
+        });
+      },
+
+      /**
+       * Generate unique ID
+       */
+      generateId() {
+        return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      },
+
+      /**
+       * Export accounts to JSON
+       */
+      async exportJSON() {
+        const accounts = await this.getAccounts();
+        return {
+          version: '1.0',
+          exported: new Date().toISOString(),
+          accounts: accounts
+        };
+      },
+
+      /**
+       * Import accounts from JSON
+       */
+      async importJSON(data) {
+        if (!data.accounts || !Array.isArray(data.accounts)) {
+          throw new Error('Invalid JSON format');
+        }
+
+        for (const account of data.accounts) {
+          // Generate new ID to avoid conflicts
+          delete account.id;
+          await this.addAccount(account);
+        }
+      },
+
+      /**
+       * Export to Base64 (compact format)
+       */
+      async exportBase64() {
+        const accounts = await this.getAccounts();
+        const compact = {
+          v: 1,
+          a: accounts.map(acc => ({
+            a: acc.account,
+            i: acc.issuer,
+            s: acc.secret,
+            d: acc.digits || 6,
+            p: acc.interval || 30
+          }))
+        };
+
+        const json = JSON.stringify(compact);
+        return btoa(json);
+      },
+
+      /**
+       * Import from Base64
+       */
+      async importBase64(base64) {
+        const json = atob(base64);
+        const compact = JSON.parse(json);
+
+        if (!compact.a || !Array.isArray(compact.a)) {
+          throw new Error('Invalid Base64 format');
+        }
+
+        for (const acc of compact.a) {
+          await this.addAccount({
+            account: acc.a,
+            issuer: acc.i,
+            secret: acc.s,
+            digits: acc.d || 6,
+            interval: acc.p || 30,
+            algorithm: 'SHA1'
+          });
+        }
+      }
+    };
+
+    // ============================================================================
+    // Settings Manager - LocalStorage
+    // ============================================================================
+
+    const SettingsManager = {
+      STORAGE_KEY: 'totp_settings',
+
+      defaults: {
+        theme: 'auto',
+        fontSize: 'medium',
+        primaryColor: '#007aff',
+        accentColor: '#5856d6',
+        borderRadius: '16',
+        glassOpacity: '0.85',
+        enableAnimations: true
+      },
+
+      /**
+       * Get setting
+       */
+      get(key, defaultValue = null) {
+        const settings = this.getAll();
+        return settings[key] !== undefined ? settings[key] : defaultValue;
+      },
+
+      /**
+       * Set setting
+       */
+      set(key, value) {
+        const settings = this.getAll();
+        settings[key] = value;
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings));
+      },
+
+      /**
+       * Get all settings
+       */
+      getAll() {
+        const stored = localStorage.getItem(this.STORAGE_KEY);
+        return stored ? { ...this.defaults, ...JSON.parse(stored) } : { ...this.defaults };
+      },
+
+      /**
+       * Reset to defaults
+       */
+      reset() {
+        localStorage.removeItem(this.STORAGE_KEY);
+      },
+
+      /**
+       * Apply theme
+       */
+      applyTheme(theme = null) {
+        if (!theme) {
+          theme = this.get('theme', 'auto');
+        }
+
+        let actualTheme = theme;
+        if (theme === 'auto') {
+          actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        document.documentElement.setAttribute('data-theme', actualTheme);
+
+        // Update icon
+        const icon = document.getElementById('themeIcon');
+        if (icon) {
+          icon.textContent = theme === 'dark' ? '☀️' : theme === 'light' ? '🌙' : '🌓';
+        }
+      }
+    };
+
+    // ============================================================================
+    // QR Manager - Scanning and Generation
+    // ============================================================================
+
+    const QRManager = {
+      scanner: null,
+      scanning: false,
+
+      /**
+       * Initialize QR scanner
+       */
+      initScanner() {
+        if (!this.scanner && typeof Html5Qrcode !== 'undefined') {
+          this.scanner = new Html5Qrcode('qrReader');
+        }
+      },
+
+      /**
+       * Start camera scanning
+       */
+      async startScanning() {
+        this.initScanner();
+
+        if (!this.scanner) {
+          UIManager.showToast('QR scanner not available', 'danger');
+          return;
+        }
+
+        try {
+          document.getElementById('qrStatus').innerHTML = '<small class="text-secondary">Starting camera...</small>';
+          document.getElementById('startScanBtn').style.display = 'none';
+          document.getElementById('stopScanBtn').style.display = 'inline-block';
+
+          await this.scanner.start(
+            { facingMode: 'environment' },
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 }
+            },
+            (decodedText) => {
+              this.onScanSuccess(decodedText);
+            },
+            (errorMessage) => {
+              // Ignore decode errors (expected when no QR in view)
+            }
+          );
+
+          this.scanning = true;
+          document.getElementById('qrStatus').innerHTML = '<small class="text-success">Camera active - scan a QR code</small>';
+        } catch (error) {
+          console.error('Error starting scanner:', error);
+          document.getElementById('qrStatus').innerHTML = `<small class="text-danger">Error: ${error.message}</small>`;
+          document.getElementById('startScanBtn').style.display = 'inline-block';
+          document.getElementById('stopScanBtn').style.display = 'none';
+          UIManager.showToast('Failed to start camera. Please check permissions.', 'danger');
+        }
+      },
+
+      /**
+       * Stop camera scanning
+       */
+      async stopScanning() {
+        if (this.scanner && this.scanning) {
+          try {
+            await this.scanner.stop();
+            this.scanning = false;
+            document.getElementById('qrStatus').innerHTML = '';
+            document.getElementById('startScanBtn').style.display = 'inline-block';
+            document.getElementById('stopScanBtn').style.display = 'none';
+          } catch (error) {
+            console.error('Error stopping scanner:', error);
+          }
+        }
+      },
+
+      /**
+       * Scan QR code from file
+       */
+      async scanFromFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        this.initScanner();
+
+        if (!this.scanner) {
+          UIManager.showToast('QR scanner not available', 'danger');
+          return;
+        }
+
+        try {
+          document.getElementById('qrStatus').innerHTML = '<small class="text-secondary">Scanning image...</small>';
+
+          const decodedText = await this.scanner.scanFile(file, true);
+          this.onScanSuccess(decodedText);
+        } catch (error) {
+          console.error('Error scanning file:', error);
+          document.getElementById('qrStatus').innerHTML = '<small class="text-danger">No QR code found in image</small>';
+          UIManager.showToast('No QR code found in image', 'danger');
+        }
+
+        // Reset file input
+        event.target.value = '';
+      },
+
+      /**
+       * Handle successful QR scan
+       */
+      async onScanSuccess(decodedText) {
+        // Stop scanning
+        await this.stopScanning();
+
+        try {
+          // Parse otpauth URI
+          if (!decodedText.startsWith('otpauth://totp/')) {
+            throw new Error('Not a valid TOTP QR code');
+          }
+
+          const account = TOTP.parseOtpauthURI(decodedText);
+
+          // Add account
+          await StorageManager.addAccount({
+            account: account.account,
+            issuer: account.issuer,
+            secret: account.secret,
+            digits: account.digits,
+            interval: account.interval,
+            algorithm: account.algorithm
+          });
+
+          UIManager.showToast('Account added successfully from QR code', 'success');
+
+          // Close modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('addAccountModal'));
+          if (modal) modal.hide();
+
+          // Refresh accounts
+          await UIManager.renderAccounts();
+        } catch (error) {
+          console.error('Error parsing QR code:', error);
+          document.getElementById('qrStatus').innerHTML = `<small class="text-danger">${error.message}</small>`;
+          UIManager.showToast('Invalid TOTP QR code', 'danger');
+        }
+      },
+
+      /**
+       * Generate and show QR code for account
+       */
+      async showQRCode() {
+        const accountId = document.getElementById('menuAccountId').value;
+        if (!accountId) return;
+
+        // Close menu modal
+        const menuModal = bootstrap.Modal.getInstance(document.getElementById('accountMenuModal'));
+        if (menuModal) menuModal.hide();
+
+        const account = await StorageManager.getAccount(accountId);
+        if (!account) {
+          UIManager.showToast('Account not found', 'danger');
+          return;
+        }
+
+        // Generate otpauth URI
+        const uri = TOTP.generateOtpauthURI(account);
+
+        // Set title
+        const title = account.issuer || account.account;
+        document.getElementById('qrDisplayTitle').textContent = `QR Code - ${title}`;
+
+        // Clear previous QR code
+        const container = document.getElementById('qrCodeContainer');
+        container.innerHTML = '';
+
+        // Generate QR code
+        if (typeof QRCode !== 'undefined') {
+          new QRCode(container, {
+            text: uri,
+            width: 256,
+            height: 256,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        } else {
+          container.innerHTML = '<p class="text-danger">QR code library not loaded</p>';
+        }
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('qrDisplayModal'));
+        modal.show();
+      },
+
+      /**
+       * Export all accounts as QR codes (batch)
+       */
+      async exportAllQR() {
+        UIManager.showToast('Batch QR export coming soon', 'info');
+      }
+    };
+
+    // ============================================================================
+    // Import/Export Manager
+    // ============================================================================
+
+    const ImportExportManager = {
+      /**
+       * Import data based on format
+       */
+      async importData() {
+        const format = document.getElementById('importFormat').value;
+        const data = document.getElementById('importData').value.trim();
+
+        if (!data) {
+          UIManager.showToast('Please enter data to import', 'danger');
+          return;
+        }
+
+        try {
+          let imported = 0;
+
+          if (format === 'json') {
+            const parsed = JSON.parse(data);
+            await StorageManager.importJSON(parsed);
+            imported = parsed.accounts ? parsed.accounts.length : 0;
+          } else if (format === 'base64') {
+            await StorageManager.importBase64(data);
+            imported = 'multiple';
+          } else if (format === 'uri') {
+            // Split by newlines and import each URI
+            const uris = data.split('\n').filter(line => line.trim().startsWith('otpauth://'));
+            for (const uri of uris) {
+              const account = TOTP.parseOtpauthURI(uri.trim());
+              await StorageManager.addAccount(account);
+            }
+            imported = uris.length;
+          }
+
+          UIManager.showToast(`Successfully imported ${imported} account(s)`, 'success');
+
+          // Close modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('addAccountModal'));
+          if (modal) modal.hide();
+
+          // Clear form
+          document.getElementById('importData').value = '';
+
+          // Refresh accounts
+          await UIManager.renderAccounts();
+        } catch (error) {
+          console.error('Import error:', error);
+          UIManager.showToast(`Import failed: ${error.message}`, 'danger');
+        }
+      },
+
+      /**
+       * Handle file upload for import
+       */
+      async handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+          const text = await file.text();
+          document.getElementById('importData').value = text;
+
+          // Auto-detect format
+          if (text.trim().startsWith('{')) {
+            document.getElementById('importFormat').value = 'json';
+          } else if (text.trim().startsWith('otpauth://')) {
+            document.getElementById('importFormat').value = 'uri';
+          } else {
+            document.getElementById('importFormat').value = 'base64';
+          }
+
+          UIManager.showToast('File loaded. Click "Import Accounts" to proceed.', 'info');
+        } catch (error) {
+          console.error('File read error:', error);
+          UIManager.showToast('Failed to read file', 'danger');
+        }
+
+        // Reset input
+        event.target.value = '';
+      },
+
+      /**
+       * Export single account
+       */
+      async exportAccount() {
+        const accountId = document.getElementById('menuAccountId').value;
+        if (!accountId) return;
+
+        // Close menu modal
+        const menuModal = bootstrap.Modal.getInstance(document.getElementById('accountMenuModal'));
+        if (menuModal) menuModal.hide();
+
+        const account = await StorageManager.getAccount(accountId);
+        if (!account) {
+          UIManager.showToast('Account not found', 'danger');
+          return;
+        }
+
+        // Set export data
+        await this.showExportModal([account]);
+      },
+
+      /**
+       * Export all accounts
+       */
+      async exportAll() {
+        const accounts = await StorageManager.getAccounts();
+        if (accounts.length === 0) {
+          UIManager.showToast('No accounts to export', 'danger');
+          return;
+        }
+
+        await this.showExportModal(accounts);
+      },
+
+      /**
+       * Show export modal with data
+       */
+      async showExportModal(accounts) {
+        const format = document.getElementById('exportFormat').value;
+        let data = '';
+
+        if (format === 'json') {
+          const exportObj = {
+            version: '1.0',
+            exported: new Date().toISOString(),
+            accounts: accounts
+          };
+          data = JSON.stringify(exportObj, null, 2);
+        } else if (format === 'base64') {
+          const compact = {
+            v: 1,
+            a: accounts.map(acc => ({
+              a: acc.account,
+              i: acc.issuer,
+              s: acc.secret,
+              d: acc.digits || 6,
+              p: acc.interval || 30
+            }))
+          };
+          data = btoa(JSON.stringify(compact));
+        } else if (format === 'uri') {
+          data = accounts.map(acc => TOTP.generateOtpauthURI(acc)).join('\n');
+        }
+
+        document.getElementById('exportData').value = data;
+
+        const modal = new bootstrap.Modal(document.getElementById('exportModal'));
+        modal.show();
+      },
+
+      /**
+       * Copy export data to clipboard
+       */
+      async copyExportData() {
+        const data = document.getElementById('exportData').value;
+
+        try {
+          await navigator.clipboard.writeText(data);
+          UIManager.showToast('Copied to clipboard', 'success');
+        } catch (error) {
+          console.error('Copy error:', error);
+          UIManager.showToast('Failed to copy', 'danger');
+        }
+      },
+
+      /**
+       * Download export data as file
+       */
+      downloadExport() {
+        const format = document.getElementById('exportFormat').value;
+        const data = document.getElementById('exportData').value;
+
+        const blob = new Blob([data], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `totp-export-${Date.now()}.${format === 'json' ? 'json' : 'txt'}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        UIManager.showToast('Export downloaded', 'success');
+      }
+    };
+
+    // ============================================================================
+    // Customization Manager
+    // ============================================================================
+
+    const CustomizationManager = {
+      /**
+       * Open settings modal
+       */
+      openSettings() {
+        // Load current settings into form
+        const settings = SettingsManager.getAll();
+
+        document.getElementById('primaryColor').value = settings.primaryColor || '#007aff';
+        document.getElementById('accentColor').value = settings.accentColor || '#5856d6';
+        document.getElementById('codeSize').value = parseInt(settings.codeSize) || 48;
+        document.getElementById('borderRadius').value = parseInt(settings.borderRadius) || 16;
+        document.getElementById('glassOpacity').value = parseInt(parseFloat(settings.glassOpacity || 0.85) * 100);
+        document.getElementById('blurEffect').value = parseInt(settings.blurEffect) || 20;
+        document.getElementById('enableAnimations').checked = settings.enableAnimations !== false;
+        document.getElementById('baseFontSize').value = parseInt(settings.baseFontSize) || 16;
+        document.getElementById('spacing').value = parseInt(settings.spacing) || 20;
+        document.getElementById('shadowIntensity').value = settings.shadowIntensity || 'medium';
+        document.getElementById('animationSpeed').value = settings.animationSpeed || 'medium';
+
+        // Update value displays
+        this.updateValueDisplays();
+
+        const modal = new bootstrap.Modal(document.getElementById('settingsModal'));
+        modal.show();
+      },
+
+      /**
+       * Update value displays
+       */
+      updateValueDisplays() {
+        document.getElementById('codeSizeValue').textContent = document.getElementById('codeSize').value + 'px';
+        document.getElementById('radiusValue').textContent = document.getElementById('borderRadius').value + 'px';
+        document.getElementById('opacityValue').textContent = document.getElementById('glassOpacity').value + '%';
+        document.getElementById('blurValue').textContent = document.getElementById('blurEffect').value + 'px';
+        document.getElementById('baseFontValue').textContent = document.getElementById('baseFontSize').value + 'px';
+        document.getElementById('spacingValue').textContent = document.getElementById('spacing').value + 'px';
+      },
+
+      /**
+       * Apply preset theme
+       */
+      applyPreset(preset) {
+        if (preset === 'apple') {
+          this.updateColor('primary', '#007aff');
+          this.updateColor('accent', '#5856d6');
+          this.updateSize('code', 48);
+          this.updateSize('radius', 16);
+          this.updateOpacity(85);
+          this.updateBlur(20);
+          this.toggleAnimations(true);
+          SettingsManager.set('theme', 'light');
+        } else if (preset === 'dark') {
+          this.updateColor('primary', '#0a84ff');
+          this.updateColor('accent', '#bf5af2');
+          this.updateSize('code', 48);
+          this.updateSize('radius', 16);
+          this.updateOpacity(85);
+          this.updateBlur(20);
+          this.toggleAnimations(true);
+          SettingsManager.set('theme', 'dark');
+        } else if (preset === 'contrast') {
+          this.updateColor('primary', '#0066cc');
+          this.updateColor('accent', '#ff6600');
+          this.updateSize('code', 56);
+          this.updateSize('radius', 8);
+          this.updateOpacity(100);
+          this.updateBlur(0);
+          this.toggleAnimations(false);
+          SettingsManager.set('theme', 'light');
+        }
+
+        SettingsManager.applyTheme();
+        UIManager.showToast('Preset applied', 'success');
+      },
+
+      /**
+       * Update color
+       */
+      updateColor(type, value) {
+        const root = document.documentElement;
+
+        if (type === 'primary') {
+          root.style.setProperty('--totp-primary', value);
+          root.style.setProperty('--bs-primary', value);
+          SettingsManager.set('primaryColor', value);
+          document.getElementById('primaryColor').value = value;
+        } else if (type === 'accent') {
+          root.style.setProperty('--totp-accent', value);
+          SettingsManager.set('accentColor', value);
+          document.getElementById('accentColor').value = value;
+        }
+      },
+
+      /**
+       * Update size
+       */
+      updateSize(type, value) {
+        const root = document.documentElement;
+
+        if (type === 'code') {
+          root.style.setProperty('--totp-font-code', value + 'px');
+          SettingsManager.set('codeSize', value);
+          document.getElementById('codeSizeValue').textContent = value + 'px';
+        } else if (type === 'radius') {
+          root.style.setProperty('--totp-border-radius', value + 'px');
+          root.style.setProperty('--bs-border-radius', value + 'px');
+          SettingsManager.set('borderRadius', value);
+          document.getElementById('radiusValue').textContent = value + 'px';
+        } else if (type === 'base') {
+          root.style.setProperty('--totp-font-base', value + 'px');
+          SettingsManager.set('baseFontSize', value);
+          document.getElementById('baseFontValue').textContent = value + 'px';
+        } else if (type === 'spacing') {
+          root.style.setProperty('--totp-spacing', value + 'px');
+          SettingsManager.set('spacing', value);
+          document.getElementById('spacingValue').textContent = value + 'px';
+        }
+      },
+
+      /**
+       * Update opacity
+       */
+      updateOpacity(value) {
+        const opacity = value / 100;
+        const root = document.documentElement;
+
+        root.style.setProperty('--totp-glass-opacity', opacity);
+        SettingsManager.set('glassOpacity', opacity);
+        document.getElementById('glassOpacity').value = value;
+        document.getElementById('opacityValue').textContent = value + '%';
+
+        // Update surface colors with new opacity
+        const theme = document.documentElement.getAttribute('data-theme');
+        if (theme === 'dark') {
+          root.style.setProperty('--totp-surface', `rgba(28, 28, 30, ${opacity})`);
+        } else {
+          root.style.setProperty('--totp-surface', `rgba(255, 255, 255, ${opacity})`);
+        }
+      },
+
+      /**
+       * Update blur
+       */
+      updateBlur(value) {
+        const root = document.documentElement;
+
+        root.style.setProperty('--totp-blur', value + 'px');
+        SettingsManager.set('blurEffect', value);
+        document.getElementById('blurEffect').value = value;
+        document.getElementById('blurValue').textContent = value + 'px';
+      },
+
+      /**
+       * Toggle animations
+       */
+      toggleAnimations(enabled) {
+        SettingsManager.set('enableAnimations', enabled);
+        document.getElementById('enableAnimations').checked = enabled;
+
+        if (!enabled) {
+          document.documentElement.style.setProperty('--totp-transition', 'none');
+        } else {
+          const speed = SettingsManager.get('animationSpeed', 'medium');
+          this.updateAnimationSpeed(speed);
+        }
+      },
+
+      /**
+       * Update shadow
+       */
+      updateShadow(intensity) {
+        const root = document.documentElement;
+        let shadow;
+
+        switch (intensity) {
+          case 'none':
+            shadow = 'none';
+            break;
+          case 'low':
+            shadow = '0 4px 16px rgba(0, 0, 0, 0.08)';
+            break;
+          case 'medium':
+            shadow = '0 8px 32px rgba(0, 0, 0, 0.12)';
+            break;
+          case 'high':
+            shadow = '0 12px 48px rgba(0, 0, 0, 0.2)';
+            break;
+        }
+
+        root.style.setProperty('--totp-shadow', shadow);
+        SettingsManager.set('shadowIntensity', intensity);
+        document.getElementById('shadowIntensity').value = intensity;
+      },
+
+      /**
+       * Update animation speed
+       */
+      updateAnimationSpeed(speed) {
+        const root = document.documentElement;
+        let duration;
+
+        switch (speed) {
+          case 'fast':
+            duration = '0.2s';
+            break;
+          case 'medium':
+            duration = '0.3s';
+            break;
+          case 'slow':
+            duration = '0.5s';
+            break;
+        }
+
+        root.style.setProperty('--totp-transition', `all ${duration} cubic-bezier(0.4, 0, 0.2, 1)`);
+        SettingsManager.set('animationSpeed', speed);
+        document.getElementById('animationSpeed').value = speed;
+      },
+
+      /**
+       * Reset to defaults
+       */
+      resetToDefaults() {
+        if (!confirm('Are you sure you want to reset all settings to defaults?')) {
+          return;
+        }
+
+        SettingsManager.reset();
+        SettingsManager.applyTheme();
+        this.applyPreset('apple');
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('settingsModal'));
+        if (modal) modal.hide();
+
+        UIManager.showToast('Settings reset to defaults', 'success');
+
+        // Reload to apply all defaults
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      },
+
+      /**
+       * Apply saved customizations on load
+       */
+      applySavedCustomizations() {
+        const settings = SettingsManager.getAll();
+
+        if (settings.primaryColor) this.updateColor('primary', settings.primaryColor);
+        if (settings.accentColor) this.updateColor('accent', settings.accentColor);
+        if (settings.codeSize) this.updateSize('code', settings.codeSize);
+        if (settings.borderRadius) this.updateSize('radius', settings.borderRadius);
+        if (settings.glassOpacity) this.updateOpacity(parseFloat(settings.glassOpacity) * 100);
+        if (settings.blurEffect) this.updateBlur(settings.blurEffect);
+        if (settings.baseFontSize) this.updateSize('base', settings.baseFontSize);
+        if (settings.spacing) this.updateSize('spacing', settings.spacing);
+        if (settings.shadowIntensity) this.updateShadow(settings.shadowIntensity);
+        if (settings.animationSpeed) this.updateAnimationSpeed(settings.animationSpeed);
+        if (settings.enableAnimations === false) this.toggleAnimations(false);
+      }
+    };
+
+    // ============================================================================
+    // UI Manager
+    // ============================================================================
+
+    const UIManager = {
+      updateTimers: {},
+
+      /**
+       * Initialize UI
+       */
+      async init() {
+        await StorageManager.init();
+        SettingsManager.applyTheme();
+        CustomizationManager.applySavedCustomizations();
+
+        await this.renderAccounts();
+        this.startTimers();
+        this.setupEventListeners();
+      },
+
+      /**
+       * Render all accounts
+       */
+      async renderAccounts(filter = '') {
+        let accounts = await StorageManager.getAccounts();
+
+        // Apply filter
+        if (filter) {
+          const lowerFilter = filter.toLowerCase();
+          accounts = accounts.filter(acc =>
+            (acc.account && acc.account.toLowerCase().includes(lowerFilter)) ||
+            (acc.issuer && acc.issuer.toLowerCase().includes(lowerFilter))
+          );
+        }
+        const grid = document.getElementById('accountsGrid');
+
+        if (accounts.length === 0) {
+          grid.innerHTML = `
+            <div class="col-12">
+              <div class="glass-container empty-state fade-in">
+                <div class="empty-state-icon">🔑</div>
+                <h3>No Accounts Yet</h3>
+                <p>Add your first TOTP account to get started</p>
+                <button class="btn btn-primary mt-3" onclick="document.getElementById('addAccountBtn').click()">
+                  Add Account
+                </button>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = accounts.map((account, index) => `
+          <div class="col-12 col-md-6 col-lg-4 fade-in" style="animation-delay: ${index * 0.05}s">
+            <div class="totp-card card" data-id="${account.id}">
+              <div class="card-header">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div class="flex-grow-1">
+                    <h6 class="mb-0 fw-bold">${this.escapeHtml(account.issuer || account.account)}</h6>
+                    ${account.issuer ? `<small class="text-secondary">${this.escapeHtml(account.account)}</small>` : ''}
+                  </div>
+                  <button class="btn-icon btn-sm" onclick="UIManager.showAccountMenu('${account.id}')">
+                    ⋮
+                  </button>
+                </div>
+              </div>
+              <div class="card-body text-center">
+                <div class="totp-code" id="code-${account.id}" onclick="UIManager.copyCode('${account.id}')" title="Click to copy">
+                  <span class="skeleton" style="display: inline-block; width: 200px; height: 60px;"></span>
+                </div>
+              </div>
+              <div class="card-footer">
+                <div class="countdown-progress">
+                  <div class="countdown-bar" id="progress-${account.id}" style="width: 100%"></div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-secondary" id="timer-${account.id}">30s</small>
+                  <small class="text-secondary">${account.digits || 6} digits</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        // Generate codes for all accounts
+        for (const account of accounts) {
+          this.updateCode(account.id);
+        }
+      },
+
+      /**
+       * Update TOTP code for an account
+       */
+      async updateCode(accountId) {
+        const account = await StorageManager.getAccount(accountId);
+        if (!account) return;
+
+        try {
+          const code = await TOTP.totp(account.secret, Date.now(), account.digits || 6, account.interval || 30);
+          const codeEl = document.getElementById(`code-${accountId}`);
+          if (codeEl) {
+            // Format code with spaces (XXX XXX)
+            const formatted = code.match(/.{1,3}/g).join(' ');
+            codeEl.textContent = formatted;
+          }
+        } catch (error) {
+          console.error('Error generating TOTP:', error);
+          const codeEl = document.getElementById(`code-${accountId}`);
+          if (codeEl) {
+            codeEl.textContent = 'ERROR';
+            codeEl.style.color = 'var(--totp-danger)';
+          }
+        }
+      },
+
+      /**
+       * Start timers for all accounts
+       */
+      startTimers() {
+        // Update every second
+        setInterval(() => {
+          this.updateAllTimers();
+        }, 1000);
+
+        // Initial update
+        this.updateAllTimers();
+      },
+
+      /**
+       * Update all timers and progress bars
+       */
+      async updateAllTimers() {
+        const accounts = await StorageManager.getAccounts();
+
+        for (const account of accounts) {
+          const interval = account.interval || 30;
+          const remaining = TOTP.getRemainingSeconds(interval);
+          const progress = TOTP.getProgress(interval);
+
+          // Update timer text
+          const timerEl = document.getElementById(`timer-${account.id}`);
+          if (timerEl) {
+            timerEl.textContent = `${remaining}s`;
+          }
+
+          // Update progress bar
+          const progressEl = document.getElementById(`progress-${account.id}`);
+          if (progressEl) {
+            progressEl.style.width = `${progress}%`;
+
+            // Add expiring class when < 10s
+            if (remaining <= 10) {
+              progressEl.classList.add('expiring');
+            } else {
+              progressEl.classList.remove('expiring');
+            }
+          }
+
+          // Regenerate code when timer resets
+          if (remaining === interval) {
+            this.updateCode(account.id);
+          }
+        }
+      },
+
+      /**
+       * Copy code to clipboard
+       */
+      async copyCode(accountId) {
+        const codeEl = document.getElementById(`code-${accountId}`);
+        if (!codeEl) return;
+
+        const code = codeEl.textContent.replace(/\s/g, '');
+
+        try {
+          await navigator.clipboard.writeText(code);
+          this.showToast('Code copied to clipboard', 'success');
+          window.hapticFeedback('success');
+        } catch (error) {
+          console.error('Failed to copy:', error);
+          this.showToast('Failed to copy code', 'danger');
+          window.hapticFeedback('error');
+        }
+      },
+
+      /**
+       * Show toast notification
+       */
+      showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const id = `toast-${Date.now()}`;
+
+        const toast = document.createElement('div');
+        toast.className = 'toast show';
+        toast.id = id;
+        toast.innerHTML = `
+          <div class="toast-body d-flex justify-content-between align-items-center">
+            <span>${message}</span>
+            <button type="button" class="btn-close btn-close-white ms-2" onclick="document.getElementById('${id}').remove()"></button>
+          </div>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.remove();
+        }, 3000);
+      },
+
+      /**
+       * Show account menu
+       */
+      showAccountMenu(accountId) {
+        document.getElementById('menuAccountId').value = accountId;
+
+        StorageManager.getAccount(accountId).then(account => {
+          const name = account.issuer || account.account;
+          document.getElementById('menuAccountName').textContent = name;
+
+          const modal = new bootstrap.Modal(document.getElementById('accountMenuModal'));
+          modal.show();
+        });
+      },
+
+      /**
+       * Edit account
+       */
+      async editAccount() {
+        const accountId = document.getElementById('menuAccountId').value;
+        if (!accountId) return;
+
+        // Close menu modal
+        const menuModal = bootstrap.Modal.getInstance(document.getElementById('accountMenuModal'));
+        if (menuModal) menuModal.hide();
+
+        const account = await StorageManager.getAccount(accountId);
+        if (!account) {
+          this.showToast('Account not found', 'danger');
+          return;
+        }
+
+        // Populate edit form
+        document.getElementById('editAccountId').value = account.id;
+        document.getElementById('editAccount').value = account.account;
+        document.getElementById('editIssuer').value = account.issuer || '';
+        document.getElementById('editSecret').value = account.secret;
+        document.getElementById('editDigits').value = account.digits || 6;
+        document.getElementById('editInterval').value = account.interval || 30;
+
+        // Show edit modal
+        const modal = new bootstrap.Modal(document.getElementById('editAccountModal'));
+        modal.show();
+      },
+
+      /**
+       * Update account from edit form
+       */
+      async updateAccount() {
+        const accountId = document.getElementById('editAccountId').value;
+        const account = document.getElementById('editAccount').value.trim();
+        const issuer = document.getElementById('editIssuer').value.trim();
+        const secret = document.getElementById('editSecret').value.trim().toUpperCase();
+        const digits = parseInt(document.getElementById('editDigits').value);
+        const interval = parseInt(document.getElementById('editInterval').value);
+
+        if (!account || !secret) {
+          this.showToast('Please fill in required fields', 'danger');
+          return;
+        }
+
+        try {
+          // Validate secret
+          TOTP.decodeBase32(secret);
+
+          await StorageManager.updateAccount(accountId, {
+            account,
+            issuer,
+            secret,
+            digits,
+            interval
+          });
+
+          this.showToast('Account updated successfully', 'success');
+
+          // Close modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('editAccountModal'));
+          modal.hide();
+
+          // Refresh accounts
+          await this.renderAccounts();
+        } catch (error) {
+          console.error('Error updating account:', error);
+          this.showToast('Invalid secret key. Please check and try again.', 'danger');
+        }
+      },
+
+      /**
+       * Show secret in modal
+       */
+      async showSecret() {
+        const accountId = document.getElementById('menuAccountId').value;
+        if (!accountId) return;
+
+        // Close menu modal
+        const menuModal = bootstrap.Modal.getInstance(document.getElementById('accountMenuModal'));
+        if (menuModal) menuModal.hide();
+
+        const account = await StorageManager.getAccount(accountId);
+        if (!account) {
+          this.showToast('Account not found', 'danger');
+          return;
+        }
+
+        // Generate otpauth URI
+        const uri = TOTP.generateOtpauthURI(account);
+
+        // Show in toast (temporary)
+        this.showToast(`Secret: ${account.secret}<br>URI: ${uri}`, 'info');
+      },
+
+      /**
+       * Toggle secret visibility in edit form
+       */
+      toggleSecretVisibility() {
+        const secretInput = document.getElementById('editSecret');
+        const toggleBtn = document.getElementById('toggleSecretBtn');
+
+        if (secretInput.type === 'password') {
+          secretInput.type = 'text';
+          toggleBtn.textContent = 'Hide Secret';
+        } else {
+          secretInput.type = 'password';
+          toggleBtn.textContent = 'Show Secret';
+        }
+      },
+
+      /**
+       * Delete account (show confirmation)
+       */
+      async deleteAccount() {
+        const accountId = document.getElementById('menuAccountId').value;
+        if (!accountId) return;
+
+        // Close menu modal
+        const menuModal = bootstrap.Modal.getInstance(document.getElementById('accountMenuModal'));
+        if (menuModal) menuModal.hide();
+
+        const account = await StorageManager.getAccount(accountId);
+        if (!account) {
+          this.showToast('Account not found', 'danger');
+          return;
+        }
+
+        // Set delete confirmation data
+        document.getElementById('deleteAccountId').value = account.id;
+        document.getElementById('deleteAccountName').textContent =
+          `${account.issuer || account.account} (${account.account})`;
+
+        // Show confirmation modal
+        const modal = new bootstrap.Modal(document.getElementById('deleteAccountModal'));
+        modal.show();
+      },
+
+      /**
+       * Confirm delete account
+       */
+      async confirmDelete() {
+        const accountId = document.getElementById('deleteAccountId').value;
+        if (!accountId) return;
+
+        try {
+          await StorageManager.deleteAccount(accountId);
+          this.showToast('Account deleted successfully', 'success');
+
+          // Close modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('deleteAccountModal'));
+          modal.hide();
+
+          // Refresh accounts
+          await this.renderAccounts();
+        } catch (error) {
+          console.error('Error deleting account:', error);
+          this.showToast('Failed to delete account', 'danger');
+        }
+      },
+
+      /**
+       * Export account
+       */
+      async exportAccount() {
+        await ImportExportManager.exportAccount();
+      },
+
+      /**
+       * Setup event listeners
+       */
+      setupEventListeners() {
+        // Add account button
+        document.getElementById('addAccountBtn').addEventListener('click', () => {
+          const modal = new bootstrap.Modal(document.getElementById('addAccountModal'));
+          modal.show();
+        });
+
+        // Save account button
+        document.getElementById('saveAccountBtn').addEventListener('click', async () => {
+          await this.saveAccount();
+        });
+
+        // Update account button
+        document.getElementById('updateAccountBtn').addEventListener('click', async () => {
+          await this.updateAccount();
+        });
+
+        // Confirm delete button
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+          await this.confirmDelete();
+        });
+
+        // Theme toggle
+        document.getElementById('themeToggle').addEventListener('click', () => {
+          const current = SettingsManager.get('theme', 'auto');
+          const themes = ['light', 'dark', 'auto'];
+          const nextIndex = (themes.indexOf(current) + 1) % themes.length;
+          const next = themes[nextIndex];
+
+          SettingsManager.set('theme', next);
+          SettingsManager.applyTheme(next);
+        });
+
+        // Auto theme detection
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+          if (SettingsManager.get('theme') === 'auto') {
+            SettingsManager.applyTheme();
+          }
+        });
+
+        // Stop QR scanning when modal closes
+        document.getElementById('addAccountModal').addEventListener('hidden.bs.modal', () => {
+          QRManager.stopScanning();
+        });
+
+        // Update export data when format changes
+        document.getElementById('exportFormat').addEventListener('change', async () => {
+          const textarea = document.getElementById('exportData');
+          if (textarea.value) {
+            // Re-export with new format
+            // This will be triggered when modal opens
+          }
+        });
+
+        // Search input
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', (e) => {
+          this.renderAccounts(e.target.value);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+          // Ignore if typing in input/textarea
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            // Allow Escape to blur
+            if (e.key === 'Escape') {
+              e.target.blur();
+            }
+            return;
+          }
+
+          // / = Focus search
+          if (e.key === '/') {
+            e.preventDefault();
+            searchInput.focus();
+          }
+
+          // n = New account
+          if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            document.getElementById('addAccountBtn').click();
+          }
+
+          // e = Export all
+          if (e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+            ImportExportManager.exportAll();
+          }
+
+          // s = Settings
+          if (e.key === 's' || e.key === 'S') {
+            e.preventDefault();
+            CustomizationManager.openSettings();
+          }
+
+          // t = Toggle theme
+          if (e.key === 't' || e.key === 'T') {
+            e.preventDefault();
+            document.getElementById('themeToggle').click();
+          }
+
+          // ? = Show keyboard shortcuts
+          if (e.key === '?') {
+            e.preventDefault();
+            this.showKeyboardShortcuts();
+          }
+        });
+      },
+
+      /**
+       * Show keyboard shortcuts help
+       */
+      showKeyboardShortcuts() {
+        const shortcuts = `
+          <strong>Keyboard Shortcuts:</strong><br>
+          <small>
+          / - Focus search<br>
+          N - New account<br>
+          E - Export all<br>
+          S - Settings<br>
+          T - Toggle theme<br>
+          ? - Show this help<br>
+          Esc - Close modals/blur input
+          </small>
+        `;
+        this.showToast(shortcuts, 'info');
+      },
+
+      /**
+       * Save account from form
+       */
+      async saveAccount() {
+        const account = document.getElementById('manualAccount').value.trim();
+        const issuer = document.getElementById('manualIssuer').value.trim();
+        const secret = document.getElementById('manualSecret').value.trim().toUpperCase();
+        const digits = parseInt(document.getElementById('manualDigits').value);
+        const interval = parseInt(document.getElementById('manualInterval').value);
+
+        if (!account || !secret) {
+          this.showToast('Please fill in required fields', 'danger');
+          return;
+        }
+
+        try {
+          // Validate secret by trying to decode it
+          TOTP.decodeBase32(secret);
+
+          await StorageManager.addAccount({
+            account,
+            issuer,
+            secret,
+            digits,
+            interval,
+            algorithm: 'SHA1'
+          });
+
+          this.showToast('Account added successfully', 'success');
+
+          // Close modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('addAccountModal'));
+          modal.hide();
+
+          // Clear form
+          document.getElementById('manualForm').reset();
+
+          // Refresh accounts
+          await this.renderAccounts();
+        } catch (error) {
+          console.error('Error adding account:', error);
+          this.showToast('Invalid secret key. Please check and try again.', 'danger');
+        }
+      },
+
+      /**
+       * Escape HTML to prevent XSS
+       */
+      escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    };
+
+    // ============================================================================
+    // Initialize Application
+    // ============================================================================
+
+    // Wait for DOM to load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => UIManager.init());
+    } else {
+      UIManager.init();
+    }
+
+    // ============================================================================
+    // PWA Features - Install Prompt & Updates
+    // ============================================================================
+
+    let deferredInstallPrompt = null;
+
+    // Capture install prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+
+      // Show install button or toast
+      UIManager.showToast('📱 Install this app for offline access!<br><button class="btn btn-sm btn-primary mt-2" onclick="installPWA()">Install</button>', 'info');
+    });
+
+    // Install PWA function
+    window.installPWA = async function() {
+      if (!deferredInstallPrompt) {
+        UIManager.showToast('App is already installed or install not available', 'info');
+        return;
+      }
+
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+
+      if (outcome === 'accepted') {
+        UIManager.showToast('App installed successfully!', 'success');
+      }
+
+      deferredInstallPrompt = null;
+    };
+
+    // Handle app installed
+    window.addEventListener('appinstalled', () => {
+      UIManager.showToast('App installed! Access it from your home screen.', 'success');
+    });
+
+    // Register service worker with update handling
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => {
+            console.log('Service Worker registered');
+
+            // Check for updates periodically
+            setInterval(() => {
+              reg.update();
+            }, 60 * 60 * 1000); // Check every hour
+
+            // Handle updates
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New version available
+                  UIManager.showToast(
+                    '🔄 Update available!<br><button class="btn btn-sm btn-primary mt-2" onclick="window.location.reload()">Reload</button>',
+                    'info'
+                  );
+                }
+              });
+            });
+          })
+          .catch(err => console.error('Service Worker registration failed:', err));
+      });
+    }
+
+    // ============================================================================
+    // Haptic Feedback Helper
+    // ============================================================================
+
+    window.hapticFeedback = function(type = 'light') {
+      if (!navigator.vibrate) return;
+
+      switch (type) {
+        case 'light':
+          navigator.vibrate(10);
+          break;
+        case 'medium':
+          navigator.vibrate(20);
+          break;
+        case 'heavy':
+          navigator.vibrate([30, 10, 30]);
+          break;
+        case 'success':
+          navigator.vibrate([10, 10, 10]);
+          break;
+        case 'error':
+          navigator.vibrate([50, 30, 50]);
+          break;
+      }
+    };
+  </script>
+</body>
+</html>

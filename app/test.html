@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOTP Algorithm Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-result {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      font-family: monospace;
+    }
+    .pass { background: #d4edda; color: #155724; }
+    .fail { background: #f8d7da; color: #721c24; }
+    h2 { color: #007aff; }
+    pre { background: #fff; padding: 15px; border-radius: 8px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>🔐 TOTP Algorithm Test Suite</h1>
+  <p>Testing JavaScript implementation against RFC 4226 test vectors and Ruby script compatibility.</p>
+
+  <div id="results"></div>
+
+  <script>
+    // Copy the TOTP implementation from index.html
+    const TOTP = {
+      ALPHABET: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',
+
+      encodeBase32(input) {
+        const bytes = typeof input === 'string'
+          ? new TextEncoder().encode(input)
+          : input;
+
+        let output = '';
+        let buf = 0;
+        let bits = 0;
+
+        for (let i = 0; i < bytes.length; i++) {
+          buf = (buf << 8) | bytes[i];
+          bits += 8;
+
+          while (bits >= 5) {
+            bits -= 5;
+            output += this.ALPHABET[(buf >> bits) & 0x1f];
+          }
+        }
+
+        if (bits > 0) {
+          output += this.ALPHABET[(buf << (5 - bits)) & 0x1f];
+        }
+
+        return output;
+      },
+
+      decodeBase32(str) {
+        str = str.toUpperCase().replace(/=/g, '').replace(/[^A-Z2-7]/g, '');
+
+        const out = [];
+        let buf = 0;
+        let bits = 0;
+
+        for (let i = 0; i < str.length; i++) {
+          const val = this.ALPHABET.indexOf(str[i]);
+          if (val === -1) {
+            throw new Error(`Invalid Base32 character: ${str[i]}`);
+          }
+
+          buf = (buf << 5) | val;
+          bits += 5;
+
+          if (bits >= 8) {
+            bits -= 8;
+            out.push((buf >> bits) & 0xff);
+          }
+        }
+
+        return new Uint8Array(out);
+      },
+
+      async hmacSHA1(key, message) {
+        const cryptoKey = await crypto.subtle.importKey(
+          'raw',
+          key,
+          { name: 'HMAC', hash: 'SHA-1' },
+          false,
+          ['sign']
+        );
+
+        const signature = await crypto.subtle.sign('HMAC', cryptoKey, message);
+        return new Uint8Array(signature);
+      },
+
+      async hotp(secret, counter, digits = 6) {
+        const key = this.decodeBase32(secret);
+
+        const msg = new ArrayBuffer(8);
+        const view = new DataView(msg);
+        view.setUint32(0, Math.floor(counter / 0x100000000), false);
+        view.setUint32(4, counter & 0xffffffff, false);
+
+        const hmac = await this.hmacSHA1(key, new Uint8Array(msg));
+
+        const offset = hmac[19] & 0x0f;
+        const code = ((hmac[offset] & 0x7f) << 24) |
+                     ((hmac[offset + 1] & 0xff) << 16) |
+                     ((hmac[offset + 2] & 0xff) << 8) |
+                     (hmac[offset + 3] & 0xff);
+
+        return (code % Math.pow(10, digits)).toString().padStart(digits, '0');
+      },
+
+      async totp(secret, time = Date.now(), digits = 6, interval = 30) {
+        const counter = Math.floor(time / 1000 / interval);
+        return this.hotp(secret, counter, digits);
+      }
+    };
+
+    // Test suite
+    async function runTests() {
+      const results = document.getElementById('results');
+      let passed = 0;
+      let failed = 0;
+
+      function addResult(name, success, expected, actual) {
+        const div = document.createElement('div');
+        div.className = `test-result ${success ? 'pass' : 'fail'}`;
+        div.innerHTML = `
+          <strong>${success ? '✅ PASS' : '❌ FAIL'}</strong>: ${name}<br>
+          ${!success ? `Expected: ${expected}, Got: ${actual}` : ''}
+        `;
+        results.appendChild(div);
+
+        if (success) passed++;
+        else failed++;
+      }
+
+      // Test 1: Base32 round-trip
+      const testStr = 'Hello, World!';
+      const encoded = TOTP.encodeBase32(testStr);
+      const decoded = new TextDecoder().decode(TOTP.decodeBase32(encoded));
+      addResult('Base32 round-trip', decoded === testStr, testStr, decoded);
+
+      // Test 2: RFC 4226 HOTP test vectors
+      // Secret: "12345678901234567890" (20 bytes)
+      const rfcSecret = TOTP.encodeBase32('12345678901234567890');
+
+      const vectors = {
+        0: '755224',
+        1: '287082',
+        2: '359152',
+        3: '969429',
+        4: '338314'
+      };
+
+      for (const [counter, expected] of Object.entries(vectors)) {
+        const code = await TOTP.hotp(rfcSecret, parseInt(counter));
+        addResult(
+          `HOTP counter=${counter}`,
+          code === expected,
+          expected,
+          code
+        );
+      }
+
+      // Test 3: TOTP current code generation
+      const testSecret = 'JBSWY3DPEHPK3PXP';
+      const currentCode = await TOTP.totp(testSecret);
+      addResult(
+        'TOTP code generation',
+        currentCode.length === 6 && /^\d{6}$/.test(currentCode),
+        '6 digit code',
+        currentCode
+      );
+
+      // Test 4: Specific time TOTP (for Ruby comparison)
+      const specificTime = Math.floor(Date.now() / 1000) * 1000; // Round to second
+      const specificCode = await TOTP.totp(testSecret, specificTime);
+
+      // Display summary
+      const summary = document.createElement('div');
+      summary.innerHTML = `
+        <h2>Test Summary</h2>
+        <p><strong>${passed} passed</strong>, ${failed} failed</p>
+        <h3>For Ruby Comparison:</h3>
+        <pre>Secret: ${testSecret}
+Time: ${specificTime} (${new Date(specificTime).toISOString()})
+Code: ${specificCode}
+
+Run in terminal:
+cd ~/src/morganism/totp
+ruby totp.rb --current --secret ${testSecret}
+
+The codes should match within ±30 seconds.</pre>
+      `;
+      results.appendChild(summary);
+
+      // Auto-refresh code every second
+      setInterval(async () => {
+        const newCode = await TOTP.totp(testSecret);
+        const remaining = 30 - (Math.floor(Date.now() / 1000) % 30);
+        document.querySelector('pre').innerHTML = `Secret: ${testSecret}
+Time: ${Date.now()} (${new Date().toISOString()})
+Code: ${newCode}
+Remaining: ${remaining}s
+
+Run in terminal:
+cd ~/src/morganism/totp
+ruby totp.rb --current --secret ${testSecret}
+
+The codes should match!`;
+      }, 1000);
+    }
+
+    // Run tests on load
+    runTests();
+  </script>
+</body>
+</html>
