@@ -2,6 +2,18 @@
 
 A futuristic, Apple-styled Progressive Web App for TOTP (Time-based One-Time Password) authentication, compatible with Google Authenticator and the Ruby `totp.rb` script.
 
+<details>
+
+<summary>Bare minimum PWA code ... </summary>
+
+### The Pages branch, 'docs' directory is where GitHub Pages content is located 
+
+The 'app' directory contains the same minimal code.
+
+GitHub Pages hosts the PWA at [TOTP PWA](https://totp.morganism.dev) 
+
+</details>
+
 ## Features
 
 ### ✅ All Phases Complete!
