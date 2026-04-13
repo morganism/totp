@@ -1551,6 +1551,14 @@
             colorLight: '#ffffff',
             correctLevel: QRCode.CorrectLevel.M
           });
+
+          // Force escape any CSS filter/invert from dark theme
+          container.style.cssText += `
+            background: #ffffff !important;
+            padding: 16px !important;
+            filter: none !important;
+            mix-blend-mode: normal !important;
+          `;
         } else {
           container.innerHTML = '<p class="text-danger">QR code library not loaded</p>';
         }
