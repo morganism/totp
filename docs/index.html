@@ -995,6 +995,7 @@
         const rawQuery  = qmark >= 0 ? withoutScheme.slice(qmark + 1) : '';
 
         const label  = decodeURIComponent(rawLabel);
+
         const params = new URLSearchParams({
           secret: account.secret.replace(/=+$/, ''),  // strip Base32 padding — RFC 4648 says it's optional
           algorithm: account.algorithm || 'SHA1',
