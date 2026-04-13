@@ -988,26 +988,29 @@
           throw new Error('Invalid otpauth URI');
         }
 
-        const url = new URL(uri);
-        const label = decodeURIComponent(url.pathname.substring(6)); // Remove '/totp/'
-        const params = new URLSearchParams(url.search);
+        // Don't use new URL() — it misparses otpauth:// (non-http scheme)
+        const withoutScheme = uri.slice('otpauth://totp/'.length);   // "Issuer:Account?secret=..."
+        const qmark = withoutScheme.indexOf('?');
+        const rawLabel  = qmark >= 0 ? withoutScheme.slice(0, qmark) : withoutScheme;
+        const rawQuery  = qmark >= 0 ? withoutScheme.slice(qmark + 1) : '';
 
-        // Parse label (may be "Issuer:Account" or just "Account")
-        let issuer = params.get('issuer') || '';
+        const label  = decodeURIComponent(rawLabel);
+        const params = new URLSearchParams(rawQuery);
+
+        let issuer  = params.get('issuer') || '';
         let account = label;
-
         if (label.includes(':')) {
-          const parts = label.split(':');
-          issuer = issuer || parts[0];
-          account = parts.slice(1).join(':');
+          const colon = label.indexOf(':');   // first colon only — handles emails
+          issuer  = issuer || label.slice(0, colon);
+          account = label.slice(colon + 1);
         }
 
         return {
-          account: account,
-          issuer: issuer,
-          secret: params.get('secret') || '',
-          digits: parseInt(params.get('digits') || '6'),
-          interval: parseInt(params.get('period') || '30'),
+          account:   account,
+          issuer:    issuer,
+          secret:    params.get('secret')    || '',
+          digits:    parseInt(params.get('digits')  || '6'),
+          interval:  parseInt(params.get('period')  || '30'),
           algorithm: params.get('algorithm') || 'SHA1'
         };
       },
