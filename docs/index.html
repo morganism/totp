@@ -995,7 +995,12 @@
         const rawQuery  = qmark >= 0 ? withoutScheme.slice(qmark + 1) : '';
 
         const label  = decodeURIComponent(rawLabel);
-        const params = new URLSearchParams(rawQuery);
+        const params = new URLSearchParams({
+          secret: account.secret.replace(/=+$/, ''),  // strip Base32 padding — RFC 4648 says it's optional
+          algorithm: account.algorithm || 'SHA1',
+          digits: account.digits || 6,
+          period: account.interval || 30
+        });
 
         let issuer  = params.get('issuer') || '';
         let account = label;
