@@ -2536,6 +2536,9 @@
 
           // ? = Show keyboard shortcuts
           if (e.key === '?') {
+            navigator.vibrate([50, 30, 50]);
+            break;
+
             e.preventDefault();
             this.showKeyboardShortcuts();
           }
