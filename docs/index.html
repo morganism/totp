@@ -2431,9 +2431,12 @@
        * Setup event listeners
        */
       setupEventListeners() {
+        this.showKeyboardShortcuts();
+
         // Add account button
         document.getElementById('addAccountBtn').addEventListener('click', () => {
           const modal = new bootstrap.Modal(document.getElementById('addAccountModal'));
+          this.showKeyboardShortcuts();
           modal.show();
         });
 
