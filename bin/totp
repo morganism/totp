@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+: <<DOCXX
+Add description
+Author: morgan@morganism.dev
+Date: Thu 18 Jun 2026 07:26:43 BST
+DOCXX
+
+if [[ -z "$1" ]]; then
+  printf "\033[0;31mUsage totp SECRET. Example: totp %s .\033[0m\n" "MWS6B2WNDDMBPBRY"
+  exit 127
+fi
+
+THIS=$(realpath $0)
+THIS_DIR=$(dirname $THIS)
+
+CODE=$(ruby $THIS_DIR/../totp.rb --secret $1 --current)
+printf "\033[0;32m%s\033[0m\n" "${CODE}"
+
