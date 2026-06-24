@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TOTP Cube</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#070a09">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TOTP Cube">
+<link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{ --grn:#00ff9c; --bg:#070a09; }
@@ -59,6 +65,16 @@
   .logoface{ align-items:center; justify-content:center; background:#070a09; }
   .logoface img{ width:200px; height:200px; }
   .hint{ margin-top:24px; font-size:11px; opacity:.6; }
+  .saved{ margin-top:14px; border-top:1px solid rgba(0,255,156,.25); padding-top:10px; }
+  .saved h3{ margin-bottom:6px; }
+  .saved ul{ list-style:none; margin:0; padding:0; }
+  .saved li{ display:flex; align-items:center; gap:6px; font-size:11px; padding:3px 0; }
+  .saved li span{ flex:1; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .saved li span:hover{ text-decoration:underline; }
+  .saved button{ margin:0; padding:2px 6px; font-size:10px; }
+  .del{ background:#3a1414!important; color:#ff6b6b!important; }
+  .empty{ font-size:10px; opacity:.5; }
+  button.ghost{ background:transparent; color:var(--grn); border:1px solid rgba(0,255,156,.4); }
 </style>
 </head>
 <body>
@@ -75,7 +91,12 @@
       <label>Secret (Base32)</label>
       <input id="secret">
       <button onclick="render()">Update</button>
+      <button class="ghost" onclick="saveCurrent()">Save secret</button>
       <pre id="uri"></pre>
+      <div class="saved">
+        <h3>Saved secrets</h3>
+        <ul id="savedList"></ul>
+      </div>
     </div>
 
     <div class="face back">
@@ -185,6 +206,60 @@ document.addEventListener("mousemove",e=>move(e.clientX,e.clientY));
 document.addEventListener("touchstart",e=>start(e.touches[0].clientX,e.touches[0].clientY,e));
 document.addEventListener("touchend",()=>drag=false);
 document.addEventListener("touchmove",e=>{if(drag){e.preventDefault();move(e.touches[0].clientX,e.touches[0].clientY);}},{passive:false});
+
+/* ===== Persistence (IndexedDB) ===== */
+let db;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open("totp-cube",1);
+    r.onupgradeneeded=()=>r.result.createObjectStore("secrets",{keyPath:"id"});
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+}
+function tx(mode){return db.transaction("secrets",mode).objectStore("secrets");}
+function allSecrets(){
+  return new Promise((res,rej)=>{const r=tx("readonly").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
+}
+async function saveCurrent(){
+  const issuer=document.getElementById("issuer").value||"issuer";
+  const account=document.getElementById("account").value||"account";
+  const secret=document.getElementById("secret").value;
+  if(!secret){alert("No secret to save.");return;}
+  const id=issuer+":"+account;
+  await new Promise((res,rej)=>{const r=tx("readwrite").put({id,issuer,account,secret});r.onsuccess=res;r.onerror=()=>rej(r.error);});
+  renderSaved();
+}
+async function delSecret(id){
+  await new Promise((res,rej)=>{const r=tx("readwrite").delete(id);r.onsuccess=res;r.onerror=()=>rej(r.error);});
+  renderSaved();
+}
+function loadSecret(s){
+  document.getElementById("issuer").value=s.issuer;
+  document.getElementById("account").value=s.account;
+  document.getElementById("secret").value=s.secret;
+  render();updateOTP();
+}
+async function renderSaved(){
+  const list=document.getElementById("savedList");
+  const items=await allSecrets();
+  list.innerHTML="";
+  if(!items.length){list.innerHTML='<li class="empty">none saved yet</li>';return;}
+  items.forEach(s=>{
+    const li=document.createElement("li");
+    const sp=document.createElement("span");sp.textContent=s.id;sp.onclick=()=>loadSecret(s);
+    const b=document.createElement("button");b.className="del";b.textContent="del";b.onclick=()=>delSecret(s.id);
+    li.appendChild(sp);li.appendChild(b);list.appendChild(li);
+  });
+}
+openDB().then(d=>{db=d;renderSaved();}).catch(()=>{
+  document.getElementById("savedList").innerHTML='<li class="empty">storage unavailable</li>';
+});
+
+/* ===== Service worker ===== */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
 </script>
 </body>
 </html>
