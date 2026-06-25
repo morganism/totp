@@ -1,4 +1,4 @@
-const CACHE = "totp-cube-v1";
+const CACHE = "totp-cube-v2";
 const ASSETS = [
   "./",
   "./index.html",
