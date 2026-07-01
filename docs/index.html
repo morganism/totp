@@ -227,7 +227,7 @@ const cube=document.getElementById("cube");
 let rx=-22,ry=28,rz=0,drag=false,lx,ly;
 function upd(){cube.style.transform="rotateX("+rx+"deg) rotateY("+ry+"deg) rotateZ("+rz+"deg)";}
 function isField(e){return e.target.closest("input,button,a,#qr");}
-function start(x,y,e){if(isField(e))return;drag=true;lx=x;ly=y;}
+function start(x,y,e){if(isField(e))return;stopAutoRotate();cfg.autoRotate=false;saveCfg();const arc=document.getElementById("autoRotateChk");if(arc)arc.checked=false;drag=true;lx=x;ly=y;}
 function move(x,y){if(!drag)return;ry+=(x-lx)*0.5;rx-=(y-ly)*0.5;lx=x;ly=y;upd();}
 document.addEventListener("mousedown",e=>start(e.clientX,e.clientY,e));
 document.addEventListener("mouseup",()=>drag=false);
