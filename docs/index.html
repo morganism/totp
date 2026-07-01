@@ -225,15 +225,54 @@ setInterval(updateOTP,1000);
 /* ===== Cube drag + auto-rotate ===== */
 const cube=document.getElementById("cube");
 let rx=-22,ry=28,rz=0,drag=false,lx,ly;
+// velocity tracking for flick detection
+let vx=0,vy=0,lastMoveT=0,idleTimer=null;
 function upd(){cube.style.transform="rotateX("+rx+"deg) rotateY("+ry+"deg) rotateZ("+rz+"deg)";}
 function isField(e){return e.target.closest("input,button,a,#qr");}
-function start(x,y,e){if(isField(e))return;stopAutoRotate();cfg.autoRotate=false;saveCfg();const arc=document.getElementById("autoRotateChk");if(arc)arc.checked=false;drag=true;lx=x;ly=y;}
-function move(x,y){if(!drag)return;ry+=(x-lx)*0.5;rx-=(y-ly)*0.5;lx=x;ly=y;upd();}
+function enableAutoRotate(){
+  cfg.autoRotate=true; saveCfg();
+  const arc=document.getElementById("autoRotateChk"); if(arc)arc.checked=true;
+  startAutoRotate();
+}
+function disableAutoRotate(){
+  stopAutoRotate();
+  cfg.autoRotate=false; saveCfg();
+  const arc=document.getElementById("autoRotateChk"); if(arc)arc.checked=false;
+}
+function scheduleIdleRestart(){
+  clearTimeout(idleTimer);
+  idleTimer=setTimeout(()=>{ enableAutoRotate(); },60000);
+}
+function start(x,y,e){
+  if(isField(e))return;
+  clearTimeout(idleTimer);
+  stopAutoRotate();
+  drag=true; lx=x; ly=y; vx=0; vy=0; lastMoveT=performance.now();
+}
+function move(x,y){
+  if(!drag)return;
+  const now=performance.now(), dt=Math.max(now-lastMoveT,1)/1000;
+  const dx=(x-lx)*0.5, dy=(y-ly)*0.5;
+  ry+=dx; rx-=dy;
+  // exponential smoothing of velocity (deg/s)
+  vx=vx*0.6+dx/dt*0.4; vy=vy*0.6+dy/dt*0.4;
+  lx=x; ly=y; lastMoveT=now; upd();
+}
+function end(){
+  if(!drag)return; drag=false;
+  const speed=Math.sqrt(vx*vx+vy*vy);
+  if(speed>80){
+    // flick — resume auto-rotate immediately
+    enableAutoRotate();
+  } else {
+    scheduleIdleRestart();
+  }
+}
 document.addEventListener("mousedown",e=>start(e.clientX,e.clientY,e));
-document.addEventListener("mouseup",()=>drag=false);
+document.addEventListener("mouseup",end);
 document.addEventListener("mousemove",e=>move(e.clientX,e.clientY));
 document.addEventListener("touchstart",e=>start(e.touches[0].clientX,e.touches[0].clientY,e));
-document.addEventListener("touchend",()=>drag=false);
+document.addEventListener("touchend",end);
 document.addEventListener("touchmove",e=>{if(drag){e.preventDefault();move(e.touches[0].clientX,e.touches[0].clientY);}},{passive:false});
 let autoRotateRAF=null;
 function startAutoRotate(){
@@ -361,7 +400,7 @@ function applyCfg(){
   r.oninput=()=>{cfg.size=+r.value;v.textContent=r.value;saveCfg();applyCfg();};
   const arc=document.getElementById("autoRotateChk");
   arc.checked=cfg.autoRotate!==false;
-  arc.onchange=()=>{cfg.autoRotate=arc.checked;saveCfg();arc.checked?startAutoRotate():stopAutoRotate();};
+  arc.onchange=()=>{arc.checked?enableAutoRotate():disableAutoRotate();};
   const ppc=document.getElementById("preloadPinChk");
   ppc.checked=cfg.preloadPin!==false;
   ppc.onchange=()=>{cfg.preloadPin=ppc.checked;saveCfg();};
