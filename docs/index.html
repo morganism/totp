@@ -151,6 +151,14 @@
         <label>Size: <span id="sizeVal">100</span>%</label>
         <input type="range" id="sizeRange" min="80" max="140" step="5" value="100">
         <button class="ghost" onclick="exportData()">Export secrets</button>
+        <label style="display:flex;align-items:center;gap:6px;margin-top:12px;">
+          <input type="checkbox" id="autoRotateChk" style="width:auto;margin:0;">
+          Auto-rotate cube
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;margin-top:8px;">
+          <input type="checkbox" id="preloadPinChk" style="width:auto;margin:0;">
+          Preload 1st pinned secret
+        </label>
       </div>
     </div>
 
@@ -214,10 +222,10 @@ setInterval(updateOTP,1000);
   render();
 })();
 
-/* ===== Cube drag ===== */
+/* ===== Cube drag + auto-rotate ===== */
 const cube=document.getElementById("cube");
-let rx=-22,ry=28,drag=false,lx,ly;
-function upd(){cube.style.transform="rotateX("+rx+"deg) rotateY("+ry+"deg)";}
+let rx=-22,ry=28,rz=0,drag=false,lx,ly;
+function upd(){cube.style.transform="rotateX("+rx+"deg) rotateY("+ry+"deg) rotateZ("+rz+"deg)";}
 function isField(e){return e.target.closest("input,button,a,#qr");}
 function start(x,y,e){if(isField(e))return;drag=true;lx=x;ly=y;}
 function move(x,y){if(!drag)return;ry+=(x-lx)*0.5;rx-=(y-ly)*0.5;lx=x;ly=y;upd();}
@@ -227,6 +235,21 @@ document.addEventListener("mousemove",e=>move(e.clientX,e.clientY));
 document.addEventListener("touchstart",e=>start(e.touches[0].clientX,e.touches[0].clientY,e));
 document.addEventListener("touchend",()=>drag=false);
 document.addEventListener("touchmove",e=>{if(drag){e.preventDefault();move(e.touches[0].clientX,e.touches[0].clientY);}},{passive:false});
+let autoRotateRAF=null;
+function startAutoRotate(){
+  if(autoRotateRAF)return;
+  let last=null;
+  function tick(ts){
+    autoRotateRAF=requestAnimationFrame(tick);
+    if(!last){last=ts;return;}
+    const dt=(ts-last)/1000; last=ts;
+    if(!drag){ry+=18*dt; rx+=7*dt; rz+=4*dt; upd();}
+  }
+  autoRotateRAF=requestAnimationFrame(tick);
+}
+function stopAutoRotate(){
+  if(autoRotateRAF){cancelAnimationFrame(autoRotateRAF);autoRotateRAF=null;}
+}
 
 /* ===== Persistence (IndexedDB) ===== */
 let db;
@@ -301,7 +324,16 @@ async function exportData(){
     URL.revokeObjectURL(a.href);
   }catch(e){alert("Export failed.");}
 }
-openDB().then(d=>{db=d;renderHistory();}).catch(()=>{
+openDB().then(async d=>{
+  db=d;
+  await renderHistory();
+  const cfgNow=JSON.parse(localStorage.getItem("totp-cube-cfg")||"{}");
+  if(cfgNow.preloadPin!==false){
+    const items=await allSecrets();
+    const first=items.filter(s=>s.pinned).sort((a,b)=>(b.lastUsed||0)-(a.lastUsed||0))[0];
+    if(first) await loadSecret(first);
+  }
+}).catch(()=>{
   document.getElementById("histList").innerHTML='<li class="empty">storage unavailable</li>';
 });
 
@@ -327,7 +359,14 @@ function applyCfg(){
   const r=document.getElementById("sizeRange"),v=document.getElementById("sizeVal");
   r.value=cfg.size||100; v.textContent=cfg.size||100;
   r.oninput=()=>{cfg.size=+r.value;v.textContent=r.value;saveCfg();applyCfg();};
+  const arc=document.getElementById("autoRotateChk");
+  arc.checked=cfg.autoRotate!==false;
+  arc.onchange=()=>{cfg.autoRotate=arc.checked;saveCfg();arc.checked?startAutoRotate():stopAutoRotate();};
+  const ppc=document.getElementById("preloadPinChk");
+  ppc.checked=cfg.preloadPin!==false;
+  ppc.onchange=()=>{cfg.preloadPin=ppc.checked;saveCfg();};
   applyCfg();
+  if(cfg.autoRotate!==false) startAutoRotate();
 })();
 
 /* ===== Service worker ===== */
